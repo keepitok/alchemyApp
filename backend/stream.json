@@ -1,0 +1,48 @@
+{
+    "profile": {
+        "id": "xjf8k76t1d7n807lhp8yjwqjbmw0j9sq",
+        "version": "1.0",
+        "createdAt": 1417010740430,
+        "sessions": [{
+            "id": "zb4m9uxm98",
+            "createdAt": 1417010740956,
+            "collectApp": "web",
+            "section": "hell",
+            "data": {
+                "page-path": "/",
+                "city": "Saint-Petersburg",
+                "region": "98",
+                "pp": "/",
+                "countryCode": 0,
+                "countryName": "Russian Federation",
+                "postalCode": null,
+                "latitude": 47.231293,
+                "longitude": 39.723297,
+                "dmaCode": 0,
+                "areaCode": 0,
+                "metroCode": 0
+            },
+            "events": [{
+                "id": "etca7rpm",
+                "createdAt": 1417010740992,
+                "definitionId": "tatata",
+                "data": {
+                    "page-url": "http://thejackalofjavascript.com/getting-started-with-node-webkit-apps/"
+                }
+            }],
+            "modifiedAt": 1417010740992
+        }],
+        "attributes": [{
+            "collectApp": "web",
+            "section": "hell",
+            "data": {
+                "capsize": ""
+            },
+            "modifiedAt": 1417010740865
+        }],
+        "mergedProfiles": []
+    },
+    "links": {
+        "self": "http://prerelease.innomdc.com/companies/222/buckets/first-bucket/profiles/xjf8k76t1d7n807lhp8yjwqjbmw0j9sq"
+    }
+}
