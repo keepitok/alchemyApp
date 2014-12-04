@@ -8,8 +8,9 @@ var app = express(),
     vars = {
         bucket: process.env.INNO_BUCKET || 'retert',
         appKey: process.env.INNO_APP_KEY || '',
-        appName: 'sdfsdf1',
-        groupId: 4,
+        appName: process.env.INNO_APP_NAME || 'sdfsdf1',
+        groupId: process.env.INNO_COMPANY_ID || 4,
+        apiUrl: process.env.INNO_API_URL || 'http://prerelease.innomdc.com/v1',
         auth: {
             user: '4.superuser',
             pass: 'test'
@@ -24,13 +25,13 @@ app.use(bodyParser.urlencoded({
 }));
 
 var getAlchemyApp = function (obj) {
-        return util.format('http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=%s&url=%s&outputMode=json', obj.apikey, obj.url);
+        return util.format('http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=%s&url=%s&outputMode=json', obj.apiKey, obj.url);
     },
     getProfilesApp = function (obj) {
-        return util.format('https://prerelease.innomdc.com/v1/companies/%s/buckets/%s/profiles/%s?app_key=%s', obj.groupId, obj.bucketName, obj.profileId, obj.appKey);
+        return util.format(vars.apiUrl + '/companies/%s/buckets/%s/profiles/%s?app_key=%s', obj.groupId, obj.bucketName, obj.profileId, obj.appKey);
     },
     getSettingsApp = function (obj) {
-        return util.format('https://prerelease.innomdc.com/v1/companies/%s/buckets/%s/apps/%s/custom?app_key=%s', obj.groupId, obj.bucketName, obj.apps, obj.appKey);
+        return util.format(vars.apiUrl + '/companies/%s/buckets/%s/apps/%s/custom?app_key=%s', obj.groupId, obj.bucketName, obj.apps, obj.appKey);
     };
 
 var setData = function (req, res) {
@@ -47,8 +48,10 @@ var setData = function (req, res) {
             if (error && !response.body) {
                 throw error || new Error('Empty response');
             }
-            var apiKey = JSON.parse(response.body).custom.apiKey;
-            var profile = req.body.profile;
+            var custom = JSON.parse(response.body).custom,
+                apiKey = custom.apiKey,
+                types = custom.types || ['FieldTerminology'],
+                profile = req.body.profile;
 
             // parsing the profile to get URL and Profile ID
             var session = profile.sessions[0],
@@ -59,7 +62,7 @@ var setData = function (req, res) {
 
             // making the entity extraction call
             request.get(getAlchemyApp({
-                apikey: apiKey,
+                apiKey: apiKey,
                 url: url
             }), function (error, response) {
                 if (error && !response.body) {
@@ -69,7 +72,7 @@ var setData = function (req, res) {
                 var interests = [];
                 for (var i = 0; i < response.entities.length; i++) {
                     var entitie = response.entities[i];
-                    if (entitie.type === 'FieldTerminology') {
+                    if (types.indexOf(entitie.type)) {
                         interests.push(entitie.text);
                     }
                     if (interests.length >= 3) {
