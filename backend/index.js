@@ -82,10 +82,10 @@ var setData = function (req, res) {
                 console.log('interests: ' + interests);
                 // getting the profile to check current interests
                 request.get(getProfilesApp({
-                    groupId: /*vars.groupId*/ 222,
-                    bucketName: /*vars.bucket*/ 'first-bucket',
-                    profileId: /*profileId*/ 'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq',
-                    appKey: /*vars.appKey*/ 'XVNo1A1sFP9ly7U0'
+                    groupId: vars.groupId /*222*/ ,
+                    bucketName: vars.bucket /*'first-bucket'*/ ,
+                    profileId: profileId /*'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq'*/ ,
+                    appKey: vars.appKey /*'XVNo1A1sFP9ly7U0'*/
                 }), function (error, response) {
                     if (error && !response.body) {
                         throw error || new Error('Empty response');
@@ -101,10 +101,10 @@ var setData = function (req, res) {
                     console.log('merged interests: ' + interests);
                     request.post({
                         url: getProfilesApp({
-                            groupId: /*vars.groupId*/ 222,
-                            bucketName: /*vars.bucket*/ 'first-bucket',
-                            profileId: /*profileId*/ 'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq',
-                            appKey: /*vars.appKey*/ 'XVNo1A1sFP9ly7U0'
+                            groupId: vars.groupId /*222*/ ,
+                            bucketName: vars.bucket /*'first-bucket'*/ ,
+                            profileId: profileId /*'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq'*/ ,
+                            appKey: vars.appKey /*'XVNo1A1sFP9ly7U0'*/
                         }),
                         body: {
                             id: profileId,
@@ -122,16 +122,23 @@ var setData = function (req, res) {
                             throw error || new Error('Empty response');
                         }
                         console.log(response.body);
-                        res.send(null);
+                        res.json({
+                            error: null
+                        });
                     });
                 });
             });
         });
     } catch (e) {
-        res.send(e.message);
+        res.json({
+            error: e.message
+        });
     }
 };
 
+app.get('/', function (req, res) {
+    res.send(JSON.stringify(process.env));
+});
 app.post('/', setData);
 
 var server = app.listen(port, function () {
