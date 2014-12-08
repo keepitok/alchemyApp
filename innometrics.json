@@ -4,7 +4,7 @@
     "pages": [{
         "name": "Setting App",
         "type": "custompage",
-        "content": "frontend/setting.html"
+        "content": "frontend/settings.html"
     }],
     "permissions": ["stream", "profile.update"],
     "runtime": "node 0.10",
