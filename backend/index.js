@@ -5,17 +5,6 @@ var express = require('express'),
     _ = require('lodash');
 
 var app = express(),
-    vars = {
-        bucket: process.env.INNO_BUCKET || 'retert',
-        appKey: process.env.INNO_APP_KEY || '',
-        appName: process.env.INNO_APP_NAME || 'sdfsdf1',
-        groupId: process.env.INNO_COMPANY_ID || 4,
-        apiUrl: process.env.INNO_API_URL || 'http://prerelease.innomdc.com/v1',
-        auth: {
-            user: '4.superuser',
-            pass: 'test'
-        }
-    },
     port = parseInt(process.env.PORT, 10);
 
 app.use(express['static'](__dirname + '/public'));
@@ -24,106 +13,106 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+var inno = require('./innometrics-backend-app');
+inno.setVars({
+    bucketName: process.env.INNO_BUCKET || 'steel',
+    appKey: process.env.INNO_APP_KEY || 'K69XeW05b4sRGJXG',
+    appName: process.env.INNO_APP_NAME || 'aluminium',
+    groupId: process.env.INNO_COMPANY_ID || 8,
+    apiUrl: process.env.INNO_API_URL || 'http://prerelease.innomdc.com/v1',
+    auth: {
+        user: '4.superuser',
+        pass: 'test'
+    }
+});
+
 var getAlchemyApp = function (obj) {
-        return util.format('http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=%s&url=%s&outputMode=json', obj.apiKey, obj.url);
-    },
-    getProfilesApp = function (obj) {
-        return util.format(vars.apiUrl + '/companies/%s/buckets/%s/profiles/%s?app_key=%s', obj.groupId, obj.bucketName, obj.profileId, obj.appKey);
-    },
-    getSettingsApp = function (obj) {
-        return util.format(vars.apiUrl + '/companies/%s/buckets/%s/apps/%s/custom?app_key=%s', obj.groupId, obj.bucketName, obj.apps, obj.appKey);
-    };
+    return util.format('http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=%s&url=%s&outputMode=json', obj.apiKey, obj.url);
+};
 
 var setData = function (req, res) {
     try {
-        var currentInterests;
-        request.get(getSettingsApp({
-            groupId: vars.groupId,
-            bucketName: vars.bucket,
-            apps: vars.appName,
-            appKey: vars.appKey
-        }), {
-            auth: vars.auth
-        }, function (error, response) {
-            if (error && !response.body) {
-                throw error || new Error('Empty response');
+        inno.getDatas(req, function (error, data) {
+            if (error) {
+                throw error;
             }
-            var custom = JSON.parse(response.body).custom,
-                apiKey = custom.apiKey,
-                types = custom.types || ['FieldTerminology'],
-                profile = req.body.profile;
+            if (!data.hasOwnProperty('page-url')) {
+                throw new Error('Page URL not set');
+            }
+            inno.setVar('url', data['page-url']);
 
-            // parsing the profile to get URL and Profile ID
-            var session = profile.sessions[0],
-                url = session.events[0].data['page-url'],
-                profileId = profile.id;
-            console.log('URL visited: ' + url);
-            console.log('Profile ID: ' + profileId);
+            inno.getSettings({
+                vars: inno.getVars()
+            }, function (error, settings) {
+                if (error) {
+                    throw error;
+                }
+                var apiKey = settings.apiKey,
+                    types = settings.types || ['FieldTerminology'];
 
-            // making the entity extraction call
-            request.get(getAlchemyApp({
-                apiKey: apiKey,
-                url: url
-            }), function (error, response) {
-                if (error && !response.body) {
-                    throw error || new Error('Empty response');
+                if (!apiKey) {
+                    throw new Error('Alchemy api key not set');
                 }
-                response = JSON.parse(response.body);
-                var interests = [];
-                for (var i = 0; i < response.entities.length; i++) {
-                    var entitie = response.entities[i];
-                    if (types.indexOf(entitie.type)) {
-                        interests.push(entitie.text);
-                    }
-                    if (interests.length >= 3) {
-                        break;
-                    }
-                }
-                console.log('interests: ' + interests);
-                // getting the profile to check current interests
-                request.get(getProfilesApp({
-                    groupId: vars.groupId /*222*/ ,
-                    bucketName: vars.bucket /*'first-bucket'*/ ,
-                    profileId: profileId /*'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq'*/ ,
-                    appKey: vars.appKey /*'XVNo1A1sFP9ly7U0'*/
+
+                // parsing the profile to get URL and Profile ID
+                console.log('URL visited: ' + inno.getVars().url);
+                console.log('Profile ID: ' + inno.getVars().profileId);
+
+                // making the entity extraction call
+                request.get(getAlchemyApp({
+                    apiKey: apiKey,
+                    url: inno.getVars().url
                 }), function (error, response) {
-                    if (error && !response.body) {
+                    if (error || !response.body) {
                         throw error || new Error('Empty response');
                     }
-                    var receivedProfile = JSON.parse(response.body).profile;
-                    if (receivedProfile.attributes && receivedProfile.attributes[0] && receivedProfile.attributes[0].data.interests) {
-                        currentInterests = receivedProfile.attributes[0].data.interests;
-                    } else {
-                        currentInterests = [];
+                    try {
+                        response = JSON.parse(response.body);
+                    } catch (e) {
+                        throw new Error('Parse JSON profile');
                     }
-                    console.log('current interests: ' + currentInterests);
-                    interests = _.uniq(currentInterests.concat(interests));
-                    console.log('merged interests: ' + interests);
-                    request.post({
-                        url: getProfilesApp({
-                            groupId: vars.groupId /*222*/ ,
-                            bucketName: vars.bucket /*'first-bucket'*/ ,
-                            profileId: profileId /*'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq'*/ ,
-                            appKey: vars.appKey /*'XVNo1A1sFP9ly7U0'*/
-                        }),
-                        body: {
-                            id: profileId,
-                            attributes: [{
-                                collectApp: session.collectApp,
-                                section: session.section,
-                                data: {
-                                    interests: interests
-                                }
-                            }]
-                        },
-                        json: true
-                    }, function (error, response) {
-                        if (error && !response.body) {
-                            throw error || new Error('Empty response');
+                    var interests = [];
+                    for (var i = 0; i < response.entities.length; i++) {
+                        var entitie = response.entities[i];
+                        if (types.indexOf(entitie.type)) {
+                            interests.push(entitie.text);
                         }
-                        console.log(response.body);
-                        res.json({
-                            error: null
+                        if (interests.length >= 3) {
+                            break;
+                        }
+                    }
+                    console.log('interests: ' + interests);
+                    // getting the profile to check current interests
+                    inno.getProfile({
+                        vars: inno.getVars()
+                    }, function (error, profile) {
+                        if (error) {
+                            throw error;
+                        }
+                        var currentInterests;
+                        if (profile.attributes &&
+                            profile.attributes.length &&
+                            profile.attributes[0].data &&
+                            profile.attributes[0].data.interests) {
+                            currentInterests = profile.attributes[0].data.interests;
+                        } else {
+                            currentInterests = [];
+                        }
+                        console.log('current interests: ' + currentInterests);
+                        interests = _.uniq(currentInterests.concat(interests));
+                        console.log('merged interests: ' + interests);
+                        inno.updateProfile({
+                            vars: inno.getVars(),
+                            data: {
+                                interests: interests
+                            }
+                        }, function (error) {
+                            if (error) {
+                                throw error;
+                            }
+                            res.json({
+                                error: null
+                            });
                         });
                     });
                 });
@@ -136,10 +125,10 @@ var setData = function (req, res) {
     }
 };
 
+app.post('/', setData);
 app.get('/', function (req, res) {
     res.send(JSON.stringify(process.env));
 });
-app.post('/', setData);
 
 var server = app.listen(port, function () {
     console.log('Listening on port %d', server.address().port);

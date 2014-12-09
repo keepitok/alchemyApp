@@ -18,7 +18,10 @@
         "beforeEach": false,
         "waits": false,
         "waitsFor": false,
-        "runs": false
+        "runs": false,
+        "$": false,
+        "JSONEditor": false,
+        "IframeHelper": false
     },
     "multistr": false, // *
     "maxerr": 50,

@@ -18,7 +18,7 @@ var editor = new JSONEditor(formEl, {
             interest: {
                 title: "Interest",
                 type: "string",
-                enum: ["3D Printing", "Amateur radio", "Acting", "Baton twirling", "Board games", "Calligraphy", "Candle making", "Computer programming", "Cooking", "Coloring", "Cosplaying", "Couponing", "Creative writing", "Crocheting", "Cryptography", "Dance", "Digital arts", "Drama", "Drawing", "Electronics", "Embroidery", "Flower arranging", "Foreign language learning", "Gaming", "tabletop games", "role-playing games", "Gambling", "Genealogy", "Homebrewing", "Ice skating", "Jewelry", "Jigsaw puzzles", "Juggling", "Knitting", "Lacemaking", "Lapidary", "Leather crafting", "Lego Building", "Machining", "Macrame", "Magic", "Model Building", "Listening to music", "Origami", "Painting", "Playing musical instruments", "Pottery", "Puzzles", "Quilting", "Reading", "Scrapbooking", "Sculpting", "Sewing", "Singing", "Sketching", "Soapmaking", "Sports", "Stand-Up Comedy", "Sudoku", "Table tennis", "Taxidermy", "Video gaming", "Watching movies", "Web surfing", "Wood carving", "Woodworking", "Worldbuilding", "Writing", "Yoga", "Yo-yoing"]
+                'enum': ["3D Printing", "Amateur radio", "Acting", "Baton twirling", "Board games", "Calligraphy", "Candle making", "Computer programming", "Cooking", "Coloring", "Cosplaying", "Couponing", "Creative writing", "Crocheting", "Cryptography", "Dance", "Digital arts", "Drama", "Drawing", "Electronics", "Embroidery", "Flower arranging", "Foreign language learning", "Gaming", "tabletop games", "role-playing games", "Gambling", "Genealogy", "Homebrewing", "Ice skating", "Jewelry", "Jigsaw puzzles", "Juggling", "Knitting", "Lacemaking", "Lapidary", "Leather crafting", "Lego Building", "Machining", "Macrame", "Magic", "Model Building", "Listening to music", "Origami", "Painting", "Playing musical instruments", "Pottery", "Puzzles", "Quilting", "Reading", "Scrapbooking", "Sculpting", "Sewing", "Singing", "Sketching", "Soapmaking", "Sports", "Stand-Up Comedy", "Sudoku", "Table tennis", "Taxidermy", "Video gaming", "Watching movies", "Web surfing", "Wood carving", "Woodworking", "Worldbuilding", "Writing", "Yoga", "Yo-yoing"]
             },
             minRelevance: {
                 title: "Minimal relevance",
@@ -30,7 +30,7 @@ var editor = new JSONEditor(formEl, {
             entityType: {
                 title: "Entity type",
                 type: "string",
-                enum: ["Anatomy", "Automobile", "Anniversary", "City", "Company", "Continent", "Country", "Degree", "Drug", "EmailAddress", "EntertainmentAward", "Facility", "FieldTerminology", "FinancialMarketIndex", "GeographicFeature", " Hashtag ", "HealthCondition", "Holiday", "IPAddress", "JobTitle", "Movie", "MusicGroup", "NaturalDisaster", "OperatingSystem", "Organization", "Person", "PrintMedia", "Quantity", "RadioProgram", "RadioStation", "Region", "Sport", "StateOrCounty", "Technology", "TelevisionShow", "TelevisionStation", "TwitterHandle"]
+                'enum': ["Anatomy", "Automobile", "Anniversary", "City", "Company", "Continent", "Country", "Degree", "Drug", "EmailAddress", "EntertainmentAward", "Facility", "FieldTerminology", "FinancialMarketIndex", "GeographicFeature", " Hashtag ", "HealthCondition", "Holiday", "IPAddress", "JobTitle", "Movie", "MusicGroup", "NaturalDisaster", "OperatingSystem", "Organization", "Person", "PrintMedia", "Quantity", "RadioProgram", "RadioStation", "Region", "Sport", "StateOrCounty", "Technology", "TelevisionShow", "TelevisionStation", "TwitterHandle"]
             }
         }
     },
@@ -59,7 +59,7 @@ submitBtn.on('click', function () {
         
         alert(errMsg.join('\n'));
     } else {
-        props.setProperties(editor.getValue(), function (status, data) {
+        props.setProperties(editor.getValue(), function (status/*, data*/) {
             if (status) {
                 alert('Settings were saved.');
             }
