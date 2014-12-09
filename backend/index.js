@@ -69,7 +69,7 @@ var setData = function (req, res) {
                     try {
                         response = JSON.parse(response.body);
                     } catch (e) {
-                        throw new Error('Parse JSON profile');
+                        throw new Error('Parse JSON');
                     }
                     var interests = [];
                     for (var i = 0; i < response.entities.length; i++) {
@@ -85,19 +85,11 @@ var setData = function (req, res) {
                     // getting the profile to check current interests
                     inno.getProfile({
                         vars: inno.getVars()
-                    }, function (error, profile) {
+                    }, function (error, attributes) {
                         if (error) {
                             throw error;
                         }
-                        var currentInterests;
-                        if (profile.attributes &&
-                            profile.attributes.length &&
-                            profile.attributes[0].data &&
-                            profile.attributes[0].data.interests) {
-                            currentInterests = profile.attributes[0].data.interests;
-                        } else {
-                            currentInterests = [];
-                        }
+                        var currentInterests = attributes.interests || [];
                         console.log('current interests: ' + currentInterests);
                         interests = _.uniq(currentInterests.concat(interests));
                         console.log('merged interests: ' + interests);

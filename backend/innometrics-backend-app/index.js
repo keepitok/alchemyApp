@@ -1,8 +1,9 @@
 var util = require('util'),
     request = require('request');
 
-var cacheable = true,
-    vars = {};
+var vars = {},
+    cache = {},
+    cachedTime = 300;
 
 var settingsAppUrl = function (obj) {
         return util.format(vars.apiUrl + '/companies/%s/buckets/%s/apps/%s/custom?app_key=%s', obj.groupId, obj.bucketName, obj.appName, obj.appKey);
@@ -11,7 +12,49 @@ var settingsAppUrl = function (obj) {
         return util.format(vars.apiUrl + '/companies/%s/buckets/%s/profiles/%s?app_key=%s', obj.groupId, obj.bucketName, obj.profileId, obj.appKey);
     };
 
+var getKeyForChache = function (name, params) {
+    return name + JSON.stringify(params);
+};
+
+var getCache = function (name, params) {
+    if (!cachedTime || params.noCache) {
+        return false;
+    }
+    var key = getKeyForChache(name, params);
+    if (cache.hasOwnProperty(key)) {
+        if (cache[key].expired < Date.now()) {
+            delete cache[key];
+            return false;
+        } else {
+            return cache[key].value;
+        }
+    }
+    return false;
+};
+
+var setCache = function (name, params, value) {
+    if (!cachedTime || params.noCache) {
+        return;
+    }
+    value = value || true;
+    var key = getKeyForChache(name, params);
+    cache[key] = {
+        expired: Date.now() + (cachedTime * 1000),
+        value: value
+    };
+};
+
 exports = module.exports = {
+    /**
+     * Working with cache
+     */
+    clearCache: function () {
+        cache = {};
+    },
+    setCachedTime: function (time) {
+        cachedTime = time;
+    },
+
     /**
      * Working with vars
      */
@@ -23,21 +66,6 @@ exports = module.exports = {
     },
     setVar: function (name, value) {
         vars[name] = value;
-    },
-
-    /**
-     * Working with cache
-     */
-    disableCache: function () {
-        cacheable = false;
-    },
-
-    enableCache: function () {
-        cacheable = true;
-    },
-
-    hasCache: function () {
-        return cacheable;
     },
 
     /**
@@ -74,6 +102,10 @@ exports = module.exports = {
      * @param  Function callback
      */
     getSettings: function (params, callback) {
+        var cachedValue = getCache('getSettings', params);
+        if (cachedValue) {
+            return callback(null, cachedValue);
+        }
         request.get(settingsAppUrl({
             groupId: params.vars.groupId,
             bucketName: params.vars.bucketName,
@@ -94,6 +126,7 @@ exports = module.exports = {
             if (!body.custom) {
                 return callback(new Error('Custom not found'));
             }
+            setCache('getSettings', params, body.custom);
             return callback(null, body.custom);
         });
     },
@@ -104,12 +137,20 @@ exports = module.exports = {
      * @param  Function callback
      */
     updateProfile: function (params, callback) {
+        var cachedValue = getCache('updateProfile', params);
+        if (cachedValue) {
+            return callback(null);
+        }
         request.post({
             url: profilesAppUrl({
-                groupId: /*params.vars.groupId*/ 222,
-                bucketName: /*params.vars.bucketName*/ 'first-bucket',
-                profileId: /*params.vars.profileId*/ 'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq',
-                appKey: /*params.vars.appKey*/ 'XVNo1A1sFP9ly7U0'
+                // groupId: params.vars.groupId,
+                // bucketName: params.vars.bucketName,
+                // profileId: params.vars.profileId,
+                // appKey: params.vars.appKey,
+                groupId: 222,
+                bucketName: 'first-bucket',
+                profileId: 'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq',
+                appKey: 'XVNo1A1sFP9ly7U0'
             }),
             body: {
                 id: params.vars.profileId,
@@ -124,6 +165,7 @@ exports = module.exports = {
             if (error || !response.body) {
                 return callback(error || new Error('Empty response'));
             }
+            setCache('updateProfile', params);
             return callback(null);
         });
     },
@@ -134,11 +176,19 @@ exports = module.exports = {
      * @param  Function callback
      */
     getProfile: function (params, callback) {
+        var cachedValue = getCache('getProfile', params);
+        if (cachedValue) {
+            return callback(null, cachedValue);
+        }
         request.get(profilesAppUrl({
-            groupId: /*params.vars.groupId*/ 222,
-            bucketName: /*params.vars.bucketName*/ 'first-bucket',
-            profileId: /*params.vars.profileId*/ 'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq',
-            appKey: /*params.vars.appKey*/ 'XVNo1A1sFP9ly7U0'
+            // groupId: params.vars.groupId,
+            // bucketName: params.vars.bucketName,
+            // profileId: params.vars.profileId,
+            // appKey: params.vars.appKey,
+            groupId: 222,
+            bucketName: 'first-bucket',
+            profileId: 'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq',
+            appKey: 'XVNo1A1sFP9ly7U0'
         }), function (error, response) {
             if (error || !response.body) {
                 return callback(error || new Error('Empty response'));
@@ -149,10 +199,18 @@ exports = module.exports = {
             } catch (e) {
                 return callback(new Error('Parse JSON profile'));
             }
-            if (!body.profile) {
+            var profile = body.profile;
+            if (!profile) {
                 return callback(new Error('Profile not found'));
             }
-            return callback(null, body.profile);
+            var attributes = [];
+            if (profile.attributes &&
+                profile.attributes.length &&
+                profile.attributes[0].data) {
+                attributes = profile.attributes[0].data;
+            }
+            setCache('getProfile', params, attributes);
+            return callback(null, attributes);
         });
 
     }
