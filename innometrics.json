@@ -3,11 +3,14 @@
     "version_description": "",
     "pages": [{
         "name": "Setting App",
-        "type": "custompage",
+        "type": "internal",
         "content": "frontend/settings.html"
     }],
     "permissions": ["stream", "profile.update"],
-    "runtime": "node 0.10",
+    "runtime": {
+        "language": "node",
+        "version": "0.10"
+    },
     "minimum_requirements": {
         "memory": 100
     },
