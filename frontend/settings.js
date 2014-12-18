@@ -37,7 +37,7 @@ var editor = new JSONEditor(formEl, {
     //startval: {},
     required: ["apiKey"],
     required_by_default: true,
-    theme: 'bootstrap2'
+    theme: 'bootstrap3'
 });
 
 var props = new IframeHelper();
