@@ -119,7 +119,7 @@ var setData = function (req, res) {
 
 app.post('/', setData);
 app.get('/', function (req, res) {
-    res.send(JSON.stringify(process.env));
+    res.send("Uptime: "+(process.uptime()/60) + " minutes; EVN VARS: "+JSON.stringify(process.env));
 });
 
 var server = app.listen(port, function () {
