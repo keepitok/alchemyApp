@@ -59,6 +59,7 @@ var setData = function (req, res) {
                     types = settings.types || ['FieldTerminology'];
 
                 if (!apiKey) {
+                    inno.clearCache();
                     return jsonError(res, 'Alchemy api key not set');
                 }
 
