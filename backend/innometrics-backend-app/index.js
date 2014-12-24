@@ -143,14 +143,14 @@ exports = module.exports = {
         }
         request.post({
             url: profilesAppUrl({
-                // groupId: params.vars.groupId,
-                // bucketName: params.vars.bucketName,
-                // profileId: params.vars.profileId,
-                // appKey: params.vars.appKey,
-                groupId: 222,
-                bucketName: 'first-bucket',
-                profileId: 'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq',
-                appKey: 'XVNo1A1sFP9ly7U0'
+                groupId: params.vars.groupId,
+                bucketName: params.vars.bucketName,
+                profileId: params.vars.profileId,
+                appKey: params.vars.appKey
+                // groupId: 310,
+                // bucketName: 'testalch',
+                // profileId: 'myqyia15bf3oc72r878usybto85nquki',
+                // appKey: '30r22Cj43U7J0WG2'
             }),
             body: {
                 id: params.vars.profileId,
@@ -181,14 +181,14 @@ exports = module.exports = {
             return callback(null, cachedValue);
         }
         request.get(profilesAppUrl({
-            // groupId: params.vars.groupId,
-            // bucketName: params.vars.bucketName,
-            // profileId: params.vars.profileId,
-            // appKey: params.vars.appKey,
-            groupId: 222,
-            bucketName: 'first-bucket',
-            profileId: 'xjf8k76t1d7n807lhp8yjwqjbmw0j9sq',
-            appKey: 'XVNo1A1sFP9ly7U0'
+            groupId: params.vars.groupId,
+            bucketName: params.vars.bucketName,
+            profileId: params.vars.profileId,
+            appKey: params.vars.appKey,
+            // groupId: 310,
+            // bucketName: 'testalch',
+            // profileId: 'myqyia15bf3oc72r878usybto85nquki',
+            // appKey: '30r22Cj43U7J0WG2'
         }), function (error, response) {
             if (error || !response.body) {
                 return callback(error || new Error('Empty response'));

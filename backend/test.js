@@ -6,5 +6,5 @@ request.post({
     body: JSON.parse(fs.readFileSync('stream.json').toString()),
     json: true
 }, function (error, response) {
-    console.log(response.body);
+    console.log(response);
 });

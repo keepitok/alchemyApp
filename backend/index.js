@@ -15,10 +15,10 @@ app.use(bodyParser.urlencoded({
 
 var inno = require('./innometrics-backend-app');
 inno.setVars({
-    bucketName: process.env.INNO_BUCKET || 'steel',
-    appKey: process.env.INNO_APP_KEY || 'K69XeW05b4sRGJXG',
-    appName: process.env.INNO_APP_NAME || 'aluminium',
-    groupId: process.env.INNO_COMPANY_ID || 8,
+    bucketName: process.env.INNO_BUCKET || 'testalch',
+    appKey: process.env.INNO_APP_KEY || '30r22Cj43U7J0WG2',
+    appName: process.env.INNO_APP_NAME || 'alch',
+    groupId: process.env.INNO_COMPANY_ID || 310,
     apiUrl: process.env.INNO_API_URL || 'http://prerelease.innomdc.com/v1',
     auth: {
         user: '4.superuser',
