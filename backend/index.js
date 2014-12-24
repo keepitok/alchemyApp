@@ -56,7 +56,8 @@ var setData = function (req, res) {
                     return jsonError(error);
                 }
                 var apiKey = settings.apiKey,
-                    types = settings.types || ['FieldTerminology'];
+                    entityType = settings.entityType,
+                    minRelevance = settings.minRelevance;
 
                 if (!apiKey) {
                     inno.clearCache();
@@ -83,7 +84,7 @@ var setData = function (req, res) {
                     var interests = [];
                     for (var i = 0; i < response.entities.length; i++) {
                         var entitie = response.entities[i];
-                        if (types.indexOf(entitie.type)) {
+                        if (entityType.indexOf(entitie.type) && entitie.relevance >= minRelevance) {
                             interests.push(entitie.text);
                         }
                         if (interests.length >= 3) {
