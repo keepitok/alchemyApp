@@ -30,14 +30,22 @@ var getAlchemyApp = function (obj) {
     return util.format('http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=%s&url=%s&outputMode=json', obj.apiKey, obj.url);
 };
 
+var errors = [],
+    jsonError = function (res, error) {
+        errors.push(error);
+        return res.json({
+            error: error
+        });
+    };
+
 var setData = function (req, res) {
     try {
         inno.getDatas(req, function (error, data) {
             if (error) {
-                throw error;
+                return jsonError(error);
             }
             if (!data.hasOwnProperty('page-url')) {
-                throw new Error('Page URL not set');
+                return jsonError(res, 'Page URL not set');
             }
             inno.setVar('url', data['page-url']);
 
@@ -45,13 +53,13 @@ var setData = function (req, res) {
                 vars: inno.getVars()
             }, function (error, settings) {
                 if (error) {
-                    throw error;
+                    return jsonError(error);
                 }
                 var apiKey = settings.apiKey,
                     types = settings.types || ['FieldTerminology'];
 
                 if (!apiKey) {
-                    throw new Error('Alchemy api key not set');
+                    return jsonError(res, 'Alchemy api key not set');
                 }
 
                 // parsing the profile to get URL and Profile ID
@@ -64,12 +72,12 @@ var setData = function (req, res) {
                     url: inno.getVars().url
                 }), function (error, response) {
                     if (error || !response.body) {
-                        throw error || new Error('Empty response');
+                        return jsonError(error || new Error('Empty response'));
                     }
                     try {
                         response = JSON.parse(response.body);
                     } catch (e) {
-                        throw new Error('Parse JSON');
+                        return jsonError(res, 'Parse JSON');
                     }
                     var interests = [];
                     for (var i = 0; i < response.entities.length; i++) {
@@ -87,7 +95,7 @@ var setData = function (req, res) {
                         vars: inno.getVars()
                     }, function (error, attributes) {
                         if (error) {
-                            throw error;
+                            return jsonError(error);
                         }
                         var currentInterests = attributes.interests || [];
                         console.log('current interests: ' + currentInterests);
@@ -100,7 +108,7 @@ var setData = function (req, res) {
                             }
                         }, function (error) {
                             if (error) {
-                                throw error;
+                                return jsonError(error);
                             }
                             res.json({
                                 error: null
@@ -119,7 +127,9 @@ var setData = function (req, res) {
 
 app.post('/', setData);
 app.get('/', function (req, res) {
-    res.send("Uptime: "+(process.uptime()/60) + " minutes; EVN VARS: "+JSON.stringify(process.env));
+    res.send('Uptime: ' + (process.uptime() / 60) + ' minutes\n\n' +
+        'EVN VARS: ' + JSON.stringify(process.env) + '\n\n' +
+        'Last errors: ' + errors.join('\n'));
 });
 
 var server = app.listen(port, function () {
