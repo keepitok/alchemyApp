@@ -111,9 +111,7 @@ exports = module.exports = {
             bucketName: params.vars.bucketName,
             appName: params.vars.appName,
             appKey: params.vars.appKey
-        }), {
-            auth: params.vars.auth
-        }, function (error, response) {
+        }), function (error, response) {
             if (error || !response.body) {
                 return callback(error || new Error('Empty response'));
             }

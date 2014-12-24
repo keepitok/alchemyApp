@@ -19,11 +19,7 @@ inno.setVars({
     appKey: process.env.INNO_APP_KEY || '30r22Cj43U7J0WG2',
     appName: process.env.INNO_APP_NAME || 'alch',
     groupId: process.env.INNO_COMPANY_ID || 310,
-    apiUrl: process.env.INNO_API_URL || 'http://prerelease.innomdc.com/v1',
-    auth: {
-        user: '4.superuser',
-        pass: 'test'
-    }
+    apiUrl: process.env.INNO_API_URL || 'http://prerelease.innomdc.com/v1'
 });
 
 var getAlchemyApp = function (obj) {
