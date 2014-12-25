@@ -27,6 +27,7 @@ var getAlchemyApp = function (obj) {
 };
 
 var errors = [],
+    tasks = [],
     jsonError = function (res, error) {
         errors.push(error);
         return res.json({
@@ -35,6 +36,7 @@ var errors = [],
     };
 
 var setData = function (req, res) {
+    var indexTask = tasks.push('---');
     try {
         inno.getDatas(req, function (error, data) {
             if (error) {
@@ -43,6 +45,7 @@ var setData = function (req, res) {
             if (!data.hasOwnProperty('page-url')) {
                 return jsonError(res, 'Page URL not set');
             }
+            tasks[indexTask - 1] = data['page-url'];
             inno.setVar('url', data['page-url']);
 
             inno.getSettings({
@@ -125,9 +128,20 @@ var setData = function (req, res) {
 
 app.post('/', setData);
 app.get('/', function (req, res) {
-    res.send('Uptime: ' + (process.uptime() / 60) + ' minutes\n\n' +
-        'EVN VARS: ' + JSON.stringify(process.env) + '\n\n' +
-        'Last errors: ' + errors.join('\n'));
+    var endIndex;
+    if (tasks.length > 10) {
+        endIndex = tasks.length - 1;
+        tasks = tasks.slice(endIndex - 10, endIndex);
+    }
+    if (errors.length > 10) {
+        endIndex = errors.length - 1;
+        errors = errors.slice(endIndex - 10, endIndex);
+    }
+
+    res.send('Uptime: ' + (process.uptime() / 60) + ' minutes<br/><br/>' +
+        'EVN VARS: ' + JSON.stringify(process.env) + '<br/><br/>' +
+        'Last 10 errors:<br/> ' + errors.join('<br/>') +
+        'Last 10 tasks:<br/> ' + tasks.join('<br/>'));
 });
 
 var server = app.listen(port, function () {
