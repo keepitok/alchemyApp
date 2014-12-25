@@ -62,7 +62,7 @@ var IframeHelper = function () {
     this.ready = false;
     this.readyStack = [];
     this.pm = new PostMessanger();
-    this.loadCurrentData();
+    setTimeout(this.loadCurrentData.bind(this), 0);
 };
 
 IframeHelper.prototype = {
