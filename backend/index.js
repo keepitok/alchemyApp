@@ -31,7 +31,7 @@ var errors = [],
     jsonError = function (res, error) {
         errors.push(error);
         return res.json({
-            error: error
+            error: null
         });
     };
 
@@ -40,7 +40,7 @@ var setData = function (req, res) {
     try {
         inno.getDatas(req, function (error, data) {
             if (error) {
-                return jsonError(error);
+                return jsonError(res, error);
             }
             if (!data.hasOwnProperty('page-url')) {
                 return jsonError(res, 'Page URL not set');
@@ -52,7 +52,7 @@ var setData = function (req, res) {
                 vars: inno.getVars()
             }, function (error, settings) {
                 if (error) {
-                    return jsonError(error);
+                    return jsonError(res, error);
                 }
                 var apiKey = settings.apiKey,
                     entityType = settings.entityType,
@@ -72,8 +72,8 @@ var setData = function (req, res) {
                     apiKey: apiKey,
                     url: inno.getVars().url
                 }), function (error, response) {
-                    if (error || !response.body) {
-                        return jsonError(error || new Error('Empty response'));
+                    if (error) {
+                        return jsonError(res, error);
                     }
                     try {
                         response = JSON.parse(response.body);
@@ -96,7 +96,7 @@ var setData = function (req, res) {
                         vars: inno.getVars()
                     }, function (error, attributes) {
                         if (error) {
-                            return jsonError(error);
+                            return jsonError(res, error);
                         }
                         var currentInterests = attributes.interests || [];
                         console.log('current interests: ' + currentInterests);
@@ -109,7 +109,7 @@ var setData = function (req, res) {
                             }
                         }, function (error) {
                             if (error) {
-                                return jsonError(error);
+                                return jsonError(res, error);
                             }
                             res.json({
                                 error: null
@@ -139,9 +139,9 @@ app.get('/', function (req, res) {
     }
 
     res.send('Uptime: ' + (process.uptime() / 60) + ' minutes<br/><br/>' +
-        'EVN VARS: ' + JSON.stringify(process.env) + '<br/><br/>' +
-        'Last 10 errors:<br/> ' + errors.join('<br/>') +
-        'Last 10 tasks:<br/> ' + tasks.join('<br/>'));
+        'EVN VARS: ' + JSON.stringify(process.env) +
+        '<br/>Last 10 errors:<br/> ' + errors.join('<br/>') +
+        '<br/>Last 10 tasks:<br/> ' + tasks.join('<br/>'));
 });
 
 var server = app.listen(port, function () {

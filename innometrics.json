@@ -6,7 +6,7 @@
         "type": "internal",
         "content": "frontend/settings.html"
     }],
-    "permissions": ["stream", "profile.update", "app.read.own"],
+    "permissions": ["stream", "profile.update", "profile.read", "app.read.own"],
     "runtime": {
         "language": "node",
         "version": "0.10"

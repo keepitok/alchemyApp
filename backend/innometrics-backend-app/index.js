@@ -106,22 +106,23 @@ exports = module.exports = {
         if (cachedValue) {
             return callback(null, cachedValue);
         }
-        request.get(settingsAppUrl({
+        var url = settingsAppUrl({
             groupId: params.vars.groupId,
             bucketName: params.vars.bucketName,
             appName: params.vars.appName,
             appKey: params.vars.appKey
-        }), function (error, response) {
-            if (error || !response.body) {
-                return callback(error || new Error('Empty response'));
+        });
+        request.get(url, function (error, response) {
+            if (error) {
+                return callback(error);
             }
             var body;
             try {
                 body = JSON.parse(response.body);
             } catch (e) {
-                return callback(new Error('Parse JSON profile'));
+                return callback(new Error('Parse JSON settings (' + url + ')'));
             }
-            if (!body.custom) {
+            if (!body.hasOwnProperty('custom')) {
                 return callback(new Error('Custom not found'));
             }
             setCache('getSettings', params, body.custom);
@@ -139,17 +140,18 @@ exports = module.exports = {
         if (cachedValue) {
             return callback(null);
         }
-        request.post({
-            url: profilesAppUrl({
-                groupId: params.vars.groupId,
-                bucketName: params.vars.bucketName,
-                profileId: params.vars.profileId,
-                appKey: params.vars.appKey
+        var url = profilesAppUrl({
+            groupId: params.vars.groupId,
+            bucketName: params.vars.bucketName,
+            profileId: params.vars.profileId,
+            appKey: params.vars.appKey
                 // groupId: 310,
                 // bucketName: 'testalch',
                 // profileId: 'myqyia15bf3oc72r878usybto85nquki',
                 // appKey: '30r22Cj43U7J0WG2'
-            }),
+        });
+        request.post({
+            url: url,
             body: {
                 id: params.vars.profileId,
                 attributes: [{
@@ -159,9 +161,9 @@ exports = module.exports = {
                 }]
             },
             json: true
-        }, function (error, response) {
-            if (error || !response.body) {
-                return callback(error || new Error('Empty response'));
+        }, function (error) {
+            if (error) {
+                return callback(error);
             }
             setCache('updateProfile', params);
             return callback(null);
@@ -178,7 +180,7 @@ exports = module.exports = {
         if (cachedValue) {
             return callback(null, cachedValue);
         }
-        request.get(profilesAppUrl({
+        var url = profilesAppUrl({
             groupId: params.vars.groupId,
             bucketName: params.vars.bucketName,
             profileId: params.vars.profileId,
@@ -187,15 +189,16 @@ exports = module.exports = {
             // bucketName: 'testalch',
             // profileId: 'myqyia15bf3oc72r878usybto85nquki',
             // appKey: '30r22Cj43U7J0WG2'
-        }), function (error, response) {
-            if (error || !response.body) {
-                return callback(error || new Error('Empty response'));
+        });
+        request.get(url, function (error, response) {
+            if (error) {
+                return callback(error);
             }
             var body;
             try {
                 body = JSON.parse(response.body);
             } catch (e) {
-                return callback(new Error('Parse JSON profile'));
+                return callback(new Error('Parse JSON profile (' + url + ')'));
             }
             var profile = body.profile;
             if (!profile) {
