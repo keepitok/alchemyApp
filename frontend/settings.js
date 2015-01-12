@@ -23,6 +23,14 @@ var editor = new JSONEditor(formEl, {
                 multipleOf: 0.1,
                 'default': 0.1
             },
+            amountInterests: {
+                title: 'Amount of stored interests',
+                type: 'number',
+                minimum: 1,
+                maximum: 20,
+                multipleOf: 1,
+                'default': 10
+            },
             entityType: {
                 title: 'Entity type',
                 type: 'array',

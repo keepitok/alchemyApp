@@ -1,8 +1,7 @@
 var express = require('express'),
     request = require('request'),
     bodyParser = require('body-parser'),
-    util = require('util'),
-    _ = require('lodash');
+    util = require('util');
 
 var app = express(),
     port = parseInt(process.env.PORT, 10);
@@ -56,7 +55,8 @@ var setData = function (req, res) {
                 }
                 var apiKey = settings.apiKey,
                     entityType = settings.entityType,
-                    minRelevance = settings.minRelevance;
+                    minRelevance = settings.minRelevance,
+                    amountInterests = settings.amountInterests;
 
                 if (!apiKey) {
                     inno.clearCache();
@@ -68,29 +68,20 @@ var setData = function (req, res) {
                 console.log('Profile ID: ' + inno.getVars().profileId);
 
                 // making the entity extraction call
-                request.get(getAlchemyApp({
+                var url = getAlchemyApp({
                     apiKey: apiKey,
                     url: inno.getVars().url
-                }), function (error, response) {
+                });
+                request.get(url, function (error, response) {
                     if (error) {
                         return jsonError(res, error);
                     }
                     try {
                         response = JSON.parse(response.body);
                     } catch (e) {
-                        return jsonError(res, 'Parse JSON');
+                        return jsonError(res, 'Parse JSON (' + url + ')');
                     }
-                    var interests = [];
-                    for (var i = 0; i < response.entities.length; i++) {
-                        var entitie = response.entities[i];
-                        if (entityType.indexOf(entitie.type) && entitie.relevance >= minRelevance) {
-                            interests.push(entitie.text);
-                        }
-                        if (interests.length >= 3) {
-                            break;
-                        }
-                    }
-                    console.log('interests: ' + interests);
+
                     // getting the profile to check current interests
                     inno.getProfile({
                         vars: inno.getVars()
@@ -98,14 +89,46 @@ var setData = function (req, res) {
                         if (error) {
                             return jsonError(res, error);
                         }
-                        var currentInterests = attributes.interests || [];
-                        console.log('current interests: ' + currentInterests);
-                        interests = _.uniq(currentInterests.concat(interests));
-                        console.log('merged interests: ' + interests);
+
+                        var interests;
+                        try {
+                            interests = JSON.parse(attributes.interests || null);
+                        } catch (e) {}
+                        interests = interests ? interests : {};
+                        console.log('interests: ' + JSON.stringify(interests));
+
+                        for (var i = 0; i < response.entities.length; i++) {
+                            var entitie = response.entities[i];
+                            var relevance = parseFloat(entitie.relevance);
+                            if (entityType.indexOf(entitie.type) && relevance >= minRelevance) {
+                                interests[entitie.text] = interests.hasOwnProperty(entitie.text) ? (interests[entitie.text] + relevance) / 2 : relevance;
+                            }
+                        }
+                        console.log('current interests: ' + JSON.stringify(interests));
+
+                        var sortableInterests = {};
+                        Object.keys(interests)
+                            .map(function (k) {
+                                return [k, interests[k]];
+                            })
+                            .sort(function (a, b) {
+                                if (a[1] < b[1]) {
+                                    return -1;
+                                }
+                                if (a[1] > b[1]) {
+                                    return 1;
+                                }
+                                return 0;
+                            }).reverse().splice(0, amountInterests)
+                            .forEach(function (d) {
+                                sortableInterests[d[0]] = d[1];
+                            });
+                        console.log('merged interests: ' + JSON.stringify(sortableInterests));
+
                         inno.updateProfile({
                             vars: inno.getVars(),
                             data: {
-                                interests: interests
+                                interests: JSON.stringify(sortableInterests)
                             }
                         }, function (error) {
                             if (error) {
