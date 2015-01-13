@@ -2,7 +2,7 @@
     "version_name": "Alchemy app",
     "version_description": "",
     "pages": [{
-        "name": "App settings",
+        "name": "App Settings",
         "type": "internal",
         "content": "frontend/settings.html"
     }],
