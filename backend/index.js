@@ -90,11 +90,7 @@ var setData = function (req, res) {
                             return jsonError(res, error);
                         }
 
-                        var interests;
-                        try {
-                            interests = JSON.parse(attributes.interests || null);
-                        } catch (e) {}
-                        interests = interests ? interests : {};
+                        var interests = attributes.interests || {};
                         console.log('interests: ' + JSON.stringify(interests));
 
                         for (var i = 0; i < response.entities.length; i++) {
@@ -128,7 +124,7 @@ var setData = function (req, res) {
                         inno.updateProfile({
                             vars: inno.getVars(),
                             data: {
-                                interests: JSON.stringify(sortableInterests)
+                                interests: sortableInterests
                             }
                         }, function (error) {
                             if (error) {
