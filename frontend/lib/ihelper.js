@@ -1,4 +1,4 @@
-var PostMessanger = function () {
+var PostMessenger = function () {
     this.messageStack = {};
     if (window.addEventListener) {
         window.addEventListener('message', this.messageHandler.bind(this));
@@ -7,7 +7,7 @@ var PostMessanger = function () {
     }
 };
 
-PostMessanger.prototype = {
+PostMessenger.prototype = {
     messageHandler: function (message) {
         var data = {};
         try {
@@ -61,7 +61,7 @@ PostMessanger.prototype = {
 var IframeHelper = function () {
     this.ready = false;
     this.readyStack = [];
-    this.pm = new PostMessanger();
+    this.pm = new PostMessenger();
     setTimeout(this.loadCurrentData.bind(this), 0);
 };
 
