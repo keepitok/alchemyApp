@@ -6,10 +6,10 @@ var vars = {},
     cachedTime = 300;
 
 var settingsAppUrl = function (obj) {
-        return util.format(vars.apiUrl + '/companies/%s/buckets/%s/apps/%s/custom?app_key=%s', obj.groupId, obj.bucketName, obj.appName, obj.appKey);
+        return util.format(vars.apiUrl + '/v1/companies/%s/buckets/%s/apps/%s/custom?app_key=%s', obj.groupId, obj.bucketName, obj.appName, obj.appKey);
     },
     profilesAppUrl = function (obj) {
-        return util.format(vars.apiUrl + '/companies/%s/buckets/%s/profiles/%s?app_key=%s', obj.groupId, obj.bucketName, obj.profileId, obj.appKey);
+        return util.format(vars.apiUrl + '/v1/companies/%s/buckets/%s/profiles/%s?app_key=%s', obj.groupId, obj.bucketName, obj.profileId, obj.appKey);
     };
 
 var getKeyForChache = function (name, params) {

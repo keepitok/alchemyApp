@@ -14,11 +14,11 @@ app.use(bodyParser.urlencoded({
 
 var inno = require('./innometrics-backend-app');
 inno.setVars({
-    bucketName: process.env.INNO_BUCKET || 'testalch',
+    bucketName: process.env.INNO_BUCKET_ID || 'testalch',
     appKey: process.env.INNO_APP_KEY || '30r22Cj43U7J0WG2',
-    appName: process.env.INNO_APP_NAME || 'alch',
+    appName: process.env.INNO_APP_ID || 'alch',
     groupId: process.env.INNO_COMPANY_ID || 310,
-    apiUrl: process.env.INNO_API_URL || 'http://prerelease.innomdc.com/v1'
+    apiUrl: process.env.INNO_API_HOST || 'http://prerelease.innomdc.com'
 });
 
 var getAlchemyApp = function (obj) {
