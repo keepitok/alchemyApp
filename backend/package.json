@@ -5,8 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "node index.js",
-    "test": "PORT=3000 node index.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "body-parser": "^1.9.3",

@@ -1,4 +1,22 @@
-var PostMessenger = function () {
+var Loader = function () {
+    $('body').append('<div id="curtain" style="display: none;"></div>');
+    $('body').append('<div id="loader" style="display: none;" class="outer"><div class="middle"><div class="content"><div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div></div></div></div>');
+    this.loaderEl = $('#loader');
+    this.curtainEl = $('#curtain');
+};
+
+Loader.prototype = {
+    show: function () {
+        this.loaderEl.show();
+        this.curtainEl.show();
+    },
+    hide: function () {
+        this.loaderEl.hide();
+        this.curtainEl.hide();
+    }
+};
+
+var PostMessanger = function () {
     this.messageStack = {};
     if (window.addEventListener) {
         window.addEventListener('message', this.messageHandler.bind(this));
@@ -7,7 +25,7 @@ var PostMessenger = function () {
     }
 };
 
-PostMessenger.prototype = {
+PostMessanger.prototype = {
     messageHandler: function (message) {
         var data = {};
         try {
@@ -61,7 +79,7 @@ PostMessenger.prototype = {
 var IframeHelper = function () {
     this.ready = false;
     this.readyStack = [];
-    this.pm = new PostMessenger();
+    this.pm = new PostMessanger();
     setTimeout(this.loadCurrentData.bind(this), 0);
 };
 
@@ -111,7 +129,7 @@ IframeHelper.prototype = {
             }
         });
     },
-    //current data
+
     getCurrentUser: function () {
         return this.currentData.user;
     },
@@ -181,85 +199,4 @@ IframeHelper.prototype = {
         this.request('app.profile.schema', callback);
     }
 
-    /*
-
-    getGuiCurrentUser: function (callback) {
-        this.request('gui.current.user', callback);
-    },
-
-    getGuiCurrentGroup: function (callback) {
-        this.request('gui.current.group', callback);
-    },
-
-    getGuiCurrentApp: function (callback) {
-        this.request('gui.current.app', callback);
-    },
-
-    getGuiCurrentBucket: function (callback) {
-        this.request('gui.current.bucket', callback);
-    },
-
-    getGuiCurrentData: function (callback) {
-        this.request('gui.current', callback);
-    },
-
-    getGuiInstalledApps: function (callback) {
-        this.request('gui.apps.installed', callback);
-    },
-
-    getGuiAvailableApps: function (callback) {
-        this.request('gui.apps.available', callback);
-    },
-
-    getGuiAppsData: function (callback) {
-        this.request('gui.apps', callback);
-    },
-
-    getGuiAppData: function (appId, callback) {
-        this.request('gui.apps;'+appId, callback);
-    },
-
-    getGuiBucketList: function (callback) {
-        this.request('gui.buckets', callback);
-    },
-
-    getGuiBucketData: function (bucketId, callback) {
-        this.request('gui.buckets;'+bucketId, callback);
-    },
-
-    getGuiUsersList: function (callback) {
-        this.request('gui.users', callback);
-    },
-
-    getGuiUserData: function (userId, callback) {
-        this.request('gui.users;' + userId, callback);
-    },
-
-    getAppSettingsEvents: function (callback) {
-        this.request('app.settings.events', callback);
-    },
-
-    removeAppSettingsEvent: function (id, callback) {
-        this.request('app.settings.events;' + id + ';delete', callback);
-    },
-
-    addAppSettingsEvent: function(event, callback) {
-        this.request('app.settings.events;' + event.key + ';create', event.value, callback);
-    },
-
-    getAppSettingsValues: function (callback) {
-        this.request('app.settings.values', callback);
-    },
-
-    setAppSettingsValues: function (values, callback) {
-        this.request('app.settings.values;' + ';update', values, callback);
-    },
-
-    getAppSettingsValue: function (prop, callback) {
-        this.request('app.settings.values;' + prop, callback);
-    },
-
-    setAppSettingsValue: function (prop, value, callback) {
-        this.request('app.settings.values;' + prop + ';update', value, callback);
-    } */
 };

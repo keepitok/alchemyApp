@@ -10,12 +10,5 @@
     "runtime": {
         "language": "node",
         "version": "0.10"
-    },
-    "minimum_requirements": {
-        "memory": 100
-    },
-    "env_vars": {
-        "VAR_NAME1": "var value1",
-        "VAR_NAME2": "var value2"
     }
 }
