@@ -10,7 +10,8 @@
   "dependencies": {
     "body-parser": "^1.9.3",
     "express": "^4.0.0",
-    "request": "^2.45.0"
+    "request": "^2.45.0",
+    "innometrics-helper": "*"
   },
   "engines": {
     "node": "0.10.x"

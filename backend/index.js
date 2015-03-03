@@ -2,7 +2,7 @@ var express = require('express'),
     request = require('request'),
     bodyParser = require('body-parser'),
     util = require('util'),
-    inno = require('./inno-helper');
+    inno = require('innometrics-helper');
 
 var app = express(),
     port = parseInt(process.env.PORT, 10);
