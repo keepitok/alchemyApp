@@ -1,9 +1,24 @@
-var express = require('express'),
-    request = require('request'),
-    bodyParser = require('body-parser'),
-    util = require('util'),
-    inno = require('innometrics-helper');
+// Base modules
+var util = require('util');
 
+// Lib to make http(s) requests
+var request = require('request');
+
+// Innometrics Helper
+var InnoHelper = require('innometrics-helper'),
+    inno = new InnoHelper({
+        bucketName: process.env.INNO_BUCKET_ID,
+        appKey:     process.env.INNO_APP_KEY,
+        apiUrl:     process.env.INNO_API_HOST,
+        appName:    process.env.INNO_APP_ID,
+        groupId:    process.env.INNO_COMPANY_ID
+    });
+
+// Express and middleware
+var express = require('express'),
+    bodyParser = require('body-parser');
+
+// Express server
 var app = express(),
     port = parseInt(process.env.PORT, 10);
 
@@ -11,18 +26,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-
-inno.setVars({
-    bucketName: process.env.INNO_BUCKET_ID,
-    appKey: process.env.INNO_APP_KEY,
-    appName: process.env.INNO_APP_ID,
-    groupId: process.env.INNO_COMPANY_ID,
-    apiUrl: process.env.INNO_API_HOST
-});
-
-var getAlchemyApp = function (obj) {
-    return util.format('http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=%s&url=%s&outputMode=json', obj.apiKey, obj.url);
-};
 
 var errors = [],
     tasks = [],
@@ -33,121 +36,119 @@ var errors = [],
         });
     };
 
-var setData = function (req, res) {
-    var indexTask = tasks.push('---');
-    try {
-        inno.getDatas(req, function (error, data) {
+/**
+ * Handle incoming POST request (ProfileStream from DH)
+ */
+app.post('/', function (req, res) {
+    var indexTask = tasks.push('---'); // reserve index
+
+    inno.getProfile(req.body, function (error, parsedData) {
+        var pageUrl, profileId, collectApp, section;
+
+        // Check if profile data was parsed
+        if (error) {
+            return jsonError(res, error);
+        }
+
+        // Extract pageUrl from event data
+        pageUrl = parsedData.data && parsedData.data['page-url'];
+        if (!pageUrl) {
+            return jsonError(res, 'Page URL not set');
+        }
+
+        tasks[indexTask - 1] = pageUrl;
+
+        profileId   = parsedData.profile.id;
+        collectApp  = parsedData.session.collectApp;
+        section     = parsedData.session.section;
+
+        // Get application settings
+        inno.getAppSettings(function (error, appSettings) {
+            var apiKey;
+
             if (error) {
                 return jsonError(res, error);
             }
-            if (!(data.data && data.data.hasOwnProperty('page-url'))) {
-                return jsonError(res, 'Page URL not set');
-            }
-            tasks[indexTask - 1] = data.data['page-url'];
-            inno.setVar('url', data.data['page-url']);
 
-            inno.getSettings({
-                vars: inno.getVars()
-            }, function (error, settings) {
+            apiKey = appSettings.apiKey;
+
+            // apiKey is required
+            if (!apiKey) {
+                inno.clearCache(); // TODO
+                return jsonError(res, 'Alchemy api key not set');
+            }
+
+            // parsing the profile to get URL and Profile ID
+            console.log('URL visited: %s', pageUrl);
+            console.log('Profile ID: %s', profileId);
+
+            // making the entity extraction call
+            var alchemyUrl = getAlchemyAppUrl({
+                apiKey: apiKey,
+                url:    pageUrl
+            });
+
+            request.get(alchemyUrl, function (error, response) {
+                var alchemyResponse;
+
                 if (error) {
                     return jsonError(res, error);
                 }
-                var apiKey = settings.apiKey,
-                    entityType = settings.entityType,
-                    minRelevance = settings.minRelevance,
-                    amountInterests = settings.amountInterests;
 
-                if (!apiKey) {
-                    inno.clearCache();
-                    return jsonError(res, 'Alchemy api key not set');
+                try {
+                    alchemyResponse = JSON.parse(response.body);
+                } catch (error) {
+                    return jsonError(res, 'Could not parse JSON from ' + alchemyUrl);
                 }
 
-                // parsing the profile to get URL and Profile ID
-                console.log('URL visited: ' + inno.getVars().url);
-                console.log('Profile ID: ' + inno.getVars().profileId);
+                inno.getProfileAttributes({
+                    profileId:  profileId,
+                    //collectApp: collectApp, // TODO
+                    section:    collectApp
+                }, function (error, attributes) {
+                    var entities, interests, sortableInterests,
+                        entityType, minRelevance, amountInterests;
 
-                // making the entity extraction call
-                var url = getAlchemyApp({
-                    apiKey: apiKey,
-                    url: inno.getVars().url
-                });
-                request.get(url, function (error, response) {
                     if (error) {
                         return jsonError(res, error);
                     }
-                    try {
-                        response = JSON.parse(response.body);
-                    } catch (error) {
-                        return jsonError(res, 'Parse JSON (' + url + ')');
-                    }
 
-                    // getting the profile to check current interests
-                    inno.getAttributes({
-                        vars: inno.getVars()
-                    }, function (error, attributes) {
+                    attributes = attributes[0] || null;
+                    interests = attributes && attributes.data.interests || {};
+                    console.log('interests: ' + JSON.stringify(interests));
+
+                    amountInterests = appSettings.amountInterests;
+                    entityType = appSettings.entityType;
+                    minRelevance = appSettings.minRelevance;
+
+                    entities = (alchemyResponse.entities instanceof Array) ? alchemyResponse.entities : [];
+
+                    interests = getInterests(entities, interests, entityType, minRelevance);
+                    console.log('current interests: ' + JSON.stringify(interests));
+
+                    sortableInterests = sortInterests(interests, amountInterests);
+                    console.log('merged interests: ' + JSON.stringify(sortableInterests));
+
+                    inno.setProfileAttributes({
+                        section: section,
+                        attributes: sortableInterests
+                    }, function (error) {
                         if (error) {
                             return jsonError(res, error);
                         }
-                        attributes = attributes.filter(function (attribute) {
-                            return attribute.collectApp === inno.getVars().collectApp && attribute.section === inno.getVars().section;
-                        });
-                        var interests = attributes.length && attributes[0].interests ? attributes[0].interests : {};
-                        console.log('interests: ' + JSON.stringify(interests));
-
-                        for (var i = 0; i < response.entities.length; i++) {
-                            var entitie = response.entities[i];
-                            var relevance = parseFloat(entitie.relevance);
-                            if (entityType.indexOf(entitie.type) && relevance >= minRelevance) {
-                                interests[entitie.text] = interests.hasOwnProperty(entitie.text) ? (interests[entitie.text] + relevance) / 2 : relevance;
-                            }
-                        }
-                        console.log('current interests: ' + JSON.stringify(interests));
-
-                        var sortableInterests = {};
-                        Object.keys(interests)
-                            .map(function (k) {
-                                return [k, interests[k]];
-                            })
-                            .sort(function (a, b) {
-                                if (a[1] < b[1]) {
-                                    return -1;
-                                }
-                                if (a[1] > b[1]) {
-                                    return 1;
-                                }
-                                return 0;
-                            }).reverse().splice(0, amountInterests)
-                            .forEach(function (d) {
-                                sortableInterests[d[0]] = d[1];
-                            });
-                        console.log('merged interests: ' + JSON.stringify(sortableInterests));
-
-                        inno.setAttributes({
-                            vars: inno.getVars(),
-                            data: {
-                                interests: sortableInterests
-                            }
-                        }, function (error) {
-                            if (error) {
-                                return jsonError(res, error);
-                            }
-                            res.json({
-                                error: null
-                            });
+                        res.json({
+                            error: null
                         });
                     });
                 });
             });
         });
-    } catch (error) {
-        res.json({
-            error: error.message
-        });
-    }
-};
+    });
+});
 
-app.post('/', setData);
 app.get('/', function (req, res) {
+    var resp;
+
     if (tasks.length > 10) {
         tasks = tasks.slice(-10);
     }
@@ -155,11 +156,61 @@ app.get('/', function (req, res) {
         errors = errors.slice(-10);
     }
 
-    res.send('Uptime: ' + (process.uptime() / 60) + ' minutes<br/>' +
-        '<br/>Last 10 errors:<br/> ' + errors.join('<br/>') +
-        '<br/>Last 10 tasks:<br/> ' + tasks.join('<br/>'));
+    resp = util.format(
+        'Uptime: %s minutes<br><br>' +
+        'Last 10 errors:<br>%s<br>' +
+        'Last 10 tasks:<br>%s',
+        process.uptime() / 60,
+        errors.join('<br>'),
+        tasks.join('<br>')
+    );
+    res.send(resp);
 });
 
 var server = app.listen(port, function () {
     console.log('Listening on port %d', server.address().port);
 });
+
+//
+// Util functions
+//
+
+function getAlchemyAppUrl (obj) {
+    var alchemyAppUrlTemplate = 'http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=%s&url=%s&outputMode=json';
+    return util.format(alchemyAppUrlTemplate, obj.apiKey, obj.url);
+}
+
+function getInterests (entities, initialInterests, entityType, minRelevance) {
+    var interests = util._extend({}, initialInterests);
+    entities.forEach(function (entitie) {
+        var text = entitie.text,
+            type = entitie.type,
+            relevance = parseFloat(entitie.relevance);
+
+        if (entityType.indexOf(type) && relevance >= minRelevance) {
+            interests[text] = interests.hasOwnProperty(text) ? (interests[text] + relevance) / 2 : relevance;
+        }
+    });
+    return interests;
+}
+
+function sortInterests (interests, max) {
+    var sortableInterests = {};
+    Object.keys(interests)
+        .map(function (interestText) {
+            return [interestText, interests[interestText]];
+        })
+        .sort(function (a, b) {
+            if (a[1] < b[1]) {
+                return -1;
+            }
+            if (a[1] > b[1]) {
+                return 1;
+            }
+            return 0;
+        }).reverse().splice(0, max)
+        .forEach(function (d) {
+            sortableInterests[d[0]] = d[1];
+        });
+    return sortableInterests;
+}
