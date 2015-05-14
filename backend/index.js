@@ -14,6 +14,7 @@ var InnoHelper = require('innometrics-helper'),
         groupId:    process.env.INNO_COMPANY_ID
     });
 
+
 // Express and middleware
 var express = require('express'),
     bodyParser = require('body-parser');
@@ -74,7 +75,7 @@ app.post('/', function (req, res) {
 
             // apiKey is required
             if (!apiKey) {
-                inno.clearCache(); // TODO
+                //inno.clearCache(); // TODO
                 return jsonError(res, 'Alchemy api key not set');
             }
 
@@ -87,6 +88,8 @@ app.post('/', function (req, res) {
                 apiKey: apiKey,
                 url:    pageUrl
             });
+
+
 
             request.get(alchemyUrl, function (error, response) {
                 var alchemyResponse;
@@ -103,8 +106,8 @@ app.post('/', function (req, res) {
 
                 inno.getProfileAttributes({
                     profileId:  profileId,
-                    //collectApp: collectApp, // TODO
-                    section:    collectApp
+                    collectApp: collectApp,
+                    section:    section
                 }, function (error, attributes) {
                     var entities, interests, sortableInterests,
                         entityType, minRelevance, amountInterests;
@@ -120,7 +123,6 @@ app.post('/', function (req, res) {
                     amountInterests = appSettings.amountInterests;
                     entityType = appSettings.entityType;
                     minRelevance = appSettings.minRelevance;
-
                     entities = (alchemyResponse.entities instanceof Array) ? alchemyResponse.entities : [];
 
                     interests = getInterests(entities, interests, entityType, minRelevance);
@@ -130,6 +132,7 @@ app.post('/', function (req, res) {
                     console.log('merged interests: ' + JSON.stringify(sortableInterests));
 
                     inno.setProfileAttributes({
+                        profileId: profileId,
                         section: section,
                         attributes: sortableInterests
                     }, function (error) {
@@ -182,15 +185,17 @@ function getAlchemyAppUrl (obj) {
 
 function getInterests (entities, initialInterests, entityType, minRelevance) {
     var interests = util._extend({}, initialInterests);
+
     entities.forEach(function (entitie) {
         var text = entitie.text,
             type = entitie.type,
             relevance = parseFloat(entitie.relevance);
 
-        if (entityType.indexOf(type) && relevance >= minRelevance) {
+        if (entityType.indexOf(type) > -1 && relevance >= minRelevance) {
             interests[text] = interests.hasOwnProperty(text) ? (interests[text] + relevance) / 2 : relevance;
         }
     });
+
     return interests;
 }
 

@@ -11,7 +11,7 @@
     "body-parser": "^1.9.3",
     "express": "^4.0.0",
     "request": "^2.45.0",
-    "innometrics-helper": "*"
+    "innometrics-helper": "^0.0.4"
   },
   "engines": {
     "node": "0.10.x"
