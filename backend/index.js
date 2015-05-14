@@ -106,7 +106,7 @@ app.post('/', function (req, res) {
 
                 inno.getProfileAttributes({
                     profileId:  profileId,
-                    collectApp: collectApp,
+                    collectApp: inno.config.collectApp,
                     section:    section
                 }, function (error, attributes) {
                     var entities, interests, sortableInterests,
@@ -117,7 +117,7 @@ app.post('/', function (req, res) {
                     }
 
                     attributes = attributes[0] || null;
-                    interests = attributes && attributes.data.interests || {};
+                    interests = attributes && attributes.data || {};
                     console.log('interests: ' + JSON.stringify(interests));
 
                     amountInterests = appSettings.amountInterests;
