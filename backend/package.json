@@ -15,7 +15,5 @@
   },
   "engines": {
     "node": "0.10.x"
-  },
-  "author": "lafin <kuvakin@gmail.com>",
-  "license": "MIT"
+  }
 }

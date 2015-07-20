@@ -1,0 +1,24 @@
+{
+    "stringSetting":{
+        "title":"String Example",
+        "type":"string",
+        "minLength":0,
+        "maxLength":40
+    },
+    "numberSetting":{
+        "title":"Number Example",
+        "type":"number",
+        "minimum":1,
+        "maximum":20,
+        "multipleOf":1
+    },
+    "arraySetting":{
+        "title":"Array Example",
+        "type":"array",
+        "uniqueItems":true,
+        "items":{
+            "type":"string",
+            "enum":["one", "two", "three"]
+        }
+    }
+}
