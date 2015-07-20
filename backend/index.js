@@ -41,6 +41,10 @@ app.post('/', function (req, res) {
     var event   = events[0];
     var url     = event.getDataValue('url');
 
+    innoHelper.getAppSettings(function (err, settings) {
+        console.log(settings['api_key']);
+    });
+
     return res.json(url);
 });
 
