@@ -34,9 +34,14 @@ var innoHelper = new inno.InnoHelper(vars);
 
 // POST request to "/" is always expected to recieve stream with events
 app.post('/', function (req, res) {
-    return res.json({
-        message: "Welcome to Innometrics profile cloud!"
-    });
+
+    var profile = innoHelper.getProfileFromRequest(req.body);
+    var session = profile.getLastSession();
+    var events  = session.getEvents();
+    var event   = events[0];
+    var url     = event.getDataValue('url');
+
+    return res.json(url);
 });
 
 
