@@ -1,6 +1,7 @@
 var express = require('express'),          // Using Express library for simple web server functionality
     bodyParser = require('body-parser'),
-    inno = require('innometrics-helper');  // Innometrics helper to work with profile cloud
+    inno = require('innometrics-helper'),  // Innometrics helper to work with profile cloud
+    request = require('request');
 
 var app = express(),
     port = parseInt(process.env.PORT, 10);
@@ -42,7 +43,14 @@ app.post('/', function (req, res) {
     var url     = event.getDataValue('url');
 
     innoHelper.getAppSettings(function (err, settings) {
-        console.log(settings['api_key']);
+        
+        var alchemyUrl = 'http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=' + settings.api_key + '&url=' + url + '&outputMode=json';
+        request.get(alchemyUrl, function (err, res) {
+            
+            var result = JSON.parse(res.body);
+            console.log(result);
+            
+        });
     });
 
     return res.json(url);
