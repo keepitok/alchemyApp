@@ -1,0 +1,6 @@
+{
+    "api_key":{
+        "title":"Alchemy API key",
+        "type":"string"
+    }
+}
