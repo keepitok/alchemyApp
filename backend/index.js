@@ -32,6 +32,26 @@ var vars = {
     groupId: process.env.INNO_COMPANY_ID
 };
 
+/**
+ *
+ * Format successfull or failed response object
+ * @param  {Object}         res     Express response object
+ * @param  {Error|String}   error   Error text or Object
+ * @param  {String}         message
+ * @return {Object}
+ */
+var sendResponse = function (res, error, message) {
+    if (error) {
+        console.error(error);
+    } else {
+        console.log(message);
+    }
+    return res.json({
+        error: error && error.message || error,
+        message: message
+    });
+};
+
 var innoHelper = new inno.InnoHelper(vars);
 
 // POST request to "/" is always expected to recieve stream with events
@@ -43,46 +63,55 @@ app.post('/', function (req, res) {
         var events  = session.getEvents();
         var event   = events[0];
         var url     = event.getDataValue('page-url');
+    } catch (err) {
+        return sendResponse(res, err);
+    }
 
-        innoHelper.getAppSettings(function (err, settings) {
+    // Get application settings
+    innoHelper.getAppSettings(function (err, settings) {
+        if (err) {
+            throw err;
+        }
+
+        var alchemyUrl = 'http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?' +
+            'apikey=' + settings.api_key +
+            '&url=' + url +
+            '&outputMode=json';
+
+        // Get Alchemy analyze of the page
+        request.get(alchemyUrl, function (err, response) {
             if (err) {
                 throw err;
             }
 
-            var alchemyUrl = 'http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?' +
-                'apikey=' + settings.api_key +
-                '&url=' + url +
-                '&outputMode=json';
+            var result = JSON.parse(response.body);
+            var interests = getInterests(result.entities, settings);
 
-            request.get(alchemyUrl, function (err, response) {
+            if (!interests.length) {
+                return sendResponse(res, null, 'No attributes to update');
+            }
+
+            // Get full profile from Data Handler
+            innoHelper.loadProfile(profile.getId(), function (err, fullProfile) {
                 if (err) {
-                    throw err;
+                    return sendResponse(res, err);
                 }
 
-                var result = JSON.parse(response.body);
-                var interests = getInterests(result.entities, settings);
-
-                if (!interests.length) {
-                    console.log('No attributes to update');
-                    return res.json(err);
-                }
-
-                innoHelper.loadProfile(profile.getId(), function (err, fullProfile) {
-                    if (err) {
-                        throw err;
-                    }
-                    
+                // Process and update attributes according to Alchemy response
+                try {
                     interests.forEach(function (item) {
                         if (item.relevance >= settings.minRelevance) {
 
-                            var attribute = fullProfile.getAttribute(item.text, innoHelper.getCollectApp(), settings.section);
+                            var id = getAttributeId(item.text);
+                            var attribute = fullProfile.getAttribute(id, innoHelper.getCollectApp(), settings.section);
                             var count = parseInt(item.count, 10);
 
                             if (!attribute) {
                                 attribute = new inno.Profile.Attribute({
-                                    name: item.text,
+                                    name: id,
                                     value: count,
-                                    section: settings.section
+                                    section: settings.section,
+                                    collectApp: innoHelper.getCollectApp()
                                 });
                                 fullProfile.setAttribute(attribute);
                             } else {
@@ -91,23 +120,37 @@ app.post('/', function (req, res) {
                             }
                         }
                     });
+                } catch (err) {
+                    return sendResponse(res, err);
+                }
 
-                    innoHelper.saveProfile(fullProfile, function (err) {
-                        if (err) {
-                            throw err;
-                        }
-                        return res.json(err);
-                    });
+                // Save profile to Data Handler
+                innoHelper.saveProfile(fullProfile, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+                    return sendResponse(res, err, 'Profile was successfully updated');
                 });
             });
         });
-
-    } catch (err) {
-        console.error(err);
-        return res.json(err);
-    }
+    });
 });
 
+/**
+ * Convert raw stirng to proper ID
+ * @param  {String} name [description]
+ * @return {String}      [description]
+ */
+var getAttributeId = function (name) {
+    return name.toLowerCase().replace(new RegExp(' +', 'g'), '-').replace(new RegExp('[^-a-z0-9]', 'g'), '');
+};
+
+/**
+ * Filter result of Alchemy analyze according to the settings of the application: minimal releavance, type and amount of interests
+ * @param  {Array}  entities Array returned by Alchemy API
+ * @param  {Object} settings Application settings
+ * @return {Array}           Filtered array
+ */
 var getInterests = function (entities, settings) {
     return entities.filter(function (item) {
         return (settings.entityType.indexOf(item.type) > -1) && (parseFloat(item.relevance) >= settings.minRelevance);
