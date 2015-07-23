@@ -35,55 +35,77 @@ var vars = {
 var innoHelper = new inno.InnoHelper(vars);
 
 // POST request to "/" is always expected to recieve stream with events
-app.post('/', function (req) {
+app.post('/', function (req, res) {
 
-    var profile = innoHelper.getProfileFromRequest(req.body);
-    var session = profile.getLastSession();
-    var events  = session.getEvents();
-    var event   = events[0];
-    var url     = event.getDataValue('page-url');
+    try {
+        var profile = innoHelper.getProfileFromRequest(req.body);
+        var session = profile.getLastSession();
+        var events  = session.getEvents();
+        var event   = events[0];
+        var url     = event.getDataValue('page-url');
 
-    innoHelper.getAppSettings(function (err, settings) {
+        innoHelper.getAppSettings(function (err, settings) {
+            if (err) {
+                throw err;
+            }
 
-        var alchemyUrl = 'http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?' +
-            'apikey=' + settings.api_key +
-            '&url=' + url +
-            '&outputMode=json';
+            var alchemyUrl = 'http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?' +
+                'apikey=' + settings.api_key +
+                '&url=' + url +
+                '&outputMode=json';
 
-        request.get(alchemyUrl, function (err, res) {
+            request.get(alchemyUrl, function (err, response) {
+                if (err) {
+                    throw err;
+                }
 
-            var result = JSON.parse(res.body);
-            var section = session.getSection();
-            var interests = getInterests(result.entities, settings);
+                var result = JSON.parse(response.body);
+                var interests = getInterests(result.entities, settings);
 
-            innoHelper.loadProfile(profile.getId(), function (err, fullProfile) {
+                if (!interests.length) {
+                    console.log('No attributes to update');
+                    return res.json(err);
+                }
 
-                interests.forEach(function (item) {
-                    if (item.relevance >= settings.minRelevance) {
-
-                        var attribute = fullProfile.getAttribute(item.text, innoHelper.getCollectApp(), section);
-                        var count = parseInt(item.count, 10);
-
-                        if (!attribute) {
-                            attribute = new inno.Profile.Attribute({
-                                name: item.text,
-                                value: count,
-                                section: section
-                            });
-                            fullProfile.setAttribute(attribute);
-                        } else {
-                            var current = attribute.getValue();
-                            attribute.setValue((current + count) / 2);
-                        }
+                innoHelper.loadProfile(profile.getId(), function (err, fullProfile) {
+                    if (err) {
+                        throw err;
                     }
-                });
+                    
+                    interests.forEach(function (item) {
+                        if (item.relevance >= settings.minRelevance) {
 
-                innoHelper.saveProfile(fullProfile, function (err, result) {
-                    console.log(err, result);
+                            var attribute = fullProfile.getAttribute(item.text, innoHelper.getCollectApp(), settings.section);
+                            var count = parseInt(item.count, 10);
+
+                            if (!attribute) {
+                                attribute = new inno.Profile.Attribute({
+                                    name: item.text,
+                                    value: count,
+                                    section: settings.section
+                                });
+                                fullProfile.setAttribute(attribute);
+                            } else {
+                                var current = attribute.getValue();
+                                attribute.setValue((current + count) / 2);
+                            }
+                        }
+                    });
+
+                    innoHelper.saveProfile(fullProfile, function (err) {
+                        if (err) {
+                            throw err;
+                        }
+                        return res.json(err);
+                    });
                 });
             });
         });
-    });
+
+    } catch (err) {
+        console.error(err);
+        return res.json(err);
+    }
 });
 
 var getInterests = function (entities, settings) {
