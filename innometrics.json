@@ -4,7 +4,7 @@
     "pages": [{
         "name": "App Settings",
         "type": "bundled",
-        "content": "https://346ce766.ngrok.com"
+        "content": "frontend/settings.html"
     }],
     "permissions": ["stream", "profile.update", "profile.read", "app.read.own"],
     "runtime": {
