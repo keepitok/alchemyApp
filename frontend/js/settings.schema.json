@@ -35,5 +35,11 @@
         "options": {
             "input_height": "180px"
         }
+    },
+    "commonData": {
+        "type": "object",
+        "options": {
+            "hidden": true
+        }
     }
 }

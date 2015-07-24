@@ -87,6 +87,12 @@ app.post('/', function (req, res) {
             var result = JSON.parse(response.body);
             var interests = getInterests(result.entities, settings);
 
+            collectCommonData(result.entities, settings, function (err) {
+                if (err) {
+                    return sendResponse(res, err);
+                }
+            });
+
             if (!interests.length) {
                 return sendResponse(res, null, 'No attributes to update');
             }
@@ -155,6 +161,27 @@ var getInterests = function (entities, settings) {
     return entities.filter(function (item) {
         return (settings.entityType.indexOf(item.type) > -1) && (parseFloat(item.relevance) >= settings.minRelevance);
     }).splice(0, settings.amount);
+};
+
+var collectCommonData = function (entities, settings, callback) {
+
+    var types = settings.entityType,
+        result = settings.commonData || {};
+
+    entities.forEach(function (entity) {
+        var count = parseInt(entity.count, 10);
+        var type  = entity.type;
+        if (types.indexOf(type) > -1) {
+            result[type] = result.hasOwnProperty(type) ? result[type] + count : count;
+        }
+    });
+
+    settings.commonData = result;
+    innoHelper.setAppSettings(settings, function (err, res) {
+        if (typeof callback === 'function') {
+            callback(err, res);
+        }
+    });
 };
 
 // Starting server
