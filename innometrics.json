@@ -6,6 +6,11 @@
         "type": "bundled",
         "content": "frontend/settings.html"
     }],
+    "widgets": {
+        "interests": {
+            "title": "Interests"
+        }
+    },
     "permissions": ["stream", "profile.update", "profile.read", "app.read.own", "app.update.own"],
     "runtime": {
         "language": "node",
