@@ -1,0 +1,12 @@
+{
+  "chartType":{
+    "title":"Chart type",
+    "type":"array",
+    "uniqueItems":true,
+    "items":{
+      "type":"string",
+      "enum":["bar", "pie"],
+      "maxItems": 1
+    }
+  }
+}
