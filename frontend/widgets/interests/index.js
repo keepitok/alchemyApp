@@ -81,30 +81,22 @@ $(function () {
             return;
         }
 
+        var defaultConfig = {
+                title: title,
+                grid: {
+                    borderWidth: 0,
+                    shadow: false
+                }
+            },
+            config = $.extend(
+                defaultConfig,
+                getJQPlotConfigByType('bar') // TODO get from settings (pie or bar)
+            );
+
         $.jqplot(
             'chart',
             [plotData],
-            {
-                title: title,
-                axesDefaults: {
-                    tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
-                    tickOptions: {
-                        angle: -30,
-                        fontSize: '10pt'
-                    }
-                },
-                axes: {
-                    xaxis: {
-                        renderer: $.jqplot.CategoryAxisRenderer
-                    }
-                },
-                series:[{renderer:$.jqplot.BarRenderer}],
-                highlighter: {
-                    show: true,
-                    sizeAdjust: 7.5,
-                    tooltipAxes: 'y'
-                }
-            }
+            config
         );
     }
 
@@ -146,5 +138,60 @@ $(function () {
             return rec2[1] - rec1[1];
         });
     }
+
+    function getJQPlotConfigByType (type) {
+        var config;
+        type = type || 'bar';
+
+        switch (type) {
+
+            case 'pie':
+                config = {
+                    seriesDefaults: {
+                        // Make this a pie chart.
+                        renderer: $.jqplot.PieRenderer,
+                        rendererOptions: {
+                            // Put data labels on the pie slices.
+                            // By default, labels show the percentage of the slice.
+                            showDataLabels: true
+                        }
+                    },
+                    legend: { show:true, location: 'e' }
+                };
+                break;
+
+            case 'bar':
+                config = {
+                    axesDefaults: {
+                        tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
+                        tickOptions: {
+                            angle: -30,
+                            fontSize: '10pt'
+                        }
+                    },
+                    axes: {
+                        xaxis: {
+                            renderer: $.jqplot.CategoryAxisRenderer
+                        }
+                    },
+                    series: [{
+                        renderer: $.jqplot.BarRenderer
+                    }],
+                    highlighter: {
+                        show: true,
+                        sizeAdjust: 7.5,
+                        tooltipAxes: 'y'
+                    }
+                };
+                break;
+
+            default:
+                throw new Error('Unsupported chart type: ' + type);
+        }
+
+        return config;
+    }
+
+
 
 });
