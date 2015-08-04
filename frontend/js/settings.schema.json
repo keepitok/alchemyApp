@@ -1,0 +1,45 @@
+{
+    "api_key":{
+        "title":"Alchemy API key",
+        "type":"string"
+    },
+    "section": {
+        "title": "Section ID",
+        "type": "string"
+    },
+    "minRelevance": {
+        "title": "Minimal relevance",
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 1,
+        "multipleOf": 0.1,
+        "default": 0.5
+    },
+    "amount": {
+        "title": "Amount interests to get",
+        "type": "number",
+        "minimum": 1,
+        "maximum": 20,
+        "multipleOf": 1,
+        "default": 5
+    },
+    "entityType": {
+        "title": "Entity type",
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+            "type": "string",
+            "enum": ["Anatomy", "Automobile", "Anniversary", "City", "Company", "Continent", "Country", "Degree", "Drug", "EmailAddress", "EntertainmentAward", "Facility", "FieldTerminology", "FinancialMarketIndex", "GeographicFeature", " Hashtag ", "HealthCondition", "Holiday", "IPAddress", "JobTitle", "Movie", "MusicGroup", "NaturalDisaster", "OperatingSystem", "Organization", "Person", "PrintMedia", "Quantity", "RadioProgram", "RadioStation", "Region", "Sport", "StateOrCounty", "Technology", "TelevisionShow", "TelevisionStation", "TwitterHandle"]
+        },
+        "default": ["Country", "City", "Person", "Company", "Technology"],
+        "options": {
+            "input_height": "180px"
+        }
+    },
+    "commonData": {
+        "type": "object",
+        "options": {
+            "hidden": true
+        }
+    }
+}
