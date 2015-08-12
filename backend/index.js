@@ -69,6 +69,13 @@ app.post('/', function (req, res) {
                         attribute.setValue((current + count) / 2);
                     }
                 });
+
+                innoHelper.saveProfile(fullProfile, function (err) {
+                    if (!err) {
+                        console.log("Profile was successfully updated");
+                    }
+                });
+                
             });
             
         });
