@@ -3,6 +3,10 @@
         "title":"Alchemy API key",
         "type":"string"
     },
+    "section": {
+        "title": "Section ID",
+        "type": "string"
+    },
     "minRelevance": {
         "title": "Minimal relevance",
         "type": "number",

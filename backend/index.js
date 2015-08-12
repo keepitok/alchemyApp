@@ -49,12 +49,38 @@ app.post('/', function (req, res) {
 
             var result = JSON.parse(res.body);
             var interests = getInterests(result.entities, settings);
+
+            innoHelper.loadProfile(profile.getId(), function (err, fullProfile) {
+                interests.forEach(function (item) {
+                    var id = getAttributeId(item.text);
+                    var count = parseInt(item.count, 10);
+                    var attribute = fullProfile.getAttribute(id, innoHelper.getCollectApp(), settings.section);
+
+                    if (!attribute) {
+                        attribute = new inno.Profile.Attribute({
+                            name: id,
+                            value: count,
+                            section: settings.section,
+                            collectApp: innoHelper.getCollectApp()
+                        });
+                        fullProfile.setAttribute(attribute);
+                    } else {
+                        var current = attribute.getValue();
+                        attribute.setValue((current + count) / 2);
+                    }
+                });
+            });
             
         });
     });
 
     return res.json(url);
 });
+
+
+var getAttributeId = function (name) {
+    return name.toLowerCase().replace(new RegExp(' +', 'g'), '-').replace(new RegExp('[^-a-z0-9]', 'g'), '');
+};
 
 
 var getInterests = function (entities, settings) {
