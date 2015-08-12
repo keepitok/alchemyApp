@@ -46,15 +46,22 @@ app.post('/', function (req, res) {
         
         var alchemyUrl = 'http://access.alchemyapi.com/calls/url/URLGetRankedNamedEntities?apikey=' + settings.api_key + '&url=' + url + '&outputMode=json';
         request.get(alchemyUrl, function (err, res) {
-            
+
             var result = JSON.parse(res.body);
-            console.log(result);
+            var interests = getInterests(result.entities, settings);
             
         });
     });
 
     return res.json(url);
 });
+
+
+var getInterests = function (entities, settings) {
+    return entities.filter(function (item) {
+        return (settings.entityType.indexOf(item.type) > -1) && (parseFloat(item.relevance) >= settings.minRelevance);
+    }).splice(0, settings.amount);
+};
 
 
 // Starting server
