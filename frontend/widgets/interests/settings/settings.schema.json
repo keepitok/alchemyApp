@@ -1,10 +1,10 @@
 {
-  "chartType":{
-    "title":"Chart type",
-    "type":"object",
-    "oneOf":{
-      "bar": "Bar",
-      "pie": "Pie"
-    }
+  "chartType": {
+    "title": "Chart type",
+    "type": "string",
+    "enum": [
+      "bar",
+      "pie"
+    ]
   }
 }

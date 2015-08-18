@@ -59,12 +59,13 @@ $(function () {
                 interests = data.commonData || {};
             }
 
+            /*
             // TODO replace test data with real
             interests = {
                 "Dogs": 10,
                 "Cats": 100
             };
-
+            */
             callback(error, interests);
         });
     }
@@ -74,7 +75,8 @@ $(function () {
      * @param {String} title
      * @param {Object} data
      */
-    function renderChart(title, data) {
+    function renderChart(title, data, settings) {
+        settings = settings || {};
         var plotData = prepareJQPlotData(data);
         if (!plotData.length) {
             $chart.html('No data for display');
@@ -90,7 +92,7 @@ $(function () {
             },
             config = $.extend(
                 defaultConfig,
-                getJQPlotConfigByType('bar') // TODO get from settings (pie or bar)
+                getJQPlotConfigByType(settings.chartType) // (pie or bar)
             );
 
         $.jqplot(
@@ -114,7 +116,7 @@ $(function () {
                     if (error) {
                         console.error(error);
                     } else {
-                        renderChart('Interests', interests);
+                        renderChart('Interests', interests, settings);
                     }
                     callback(error);
                 });
