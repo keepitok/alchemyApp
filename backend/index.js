@@ -63,6 +63,9 @@ app.post('/', function (req, res) {
         var events  = session.getEvents();
         var event   = events[0];
         var url     = event.getDataValue('page-url');
+        if (!url) {
+            throw Error('URL not found');
+        }
     } catch (err) {
         return sendResponse(res, err);
     }
@@ -85,6 +88,10 @@ app.post('/', function (req, res) {
             }
 
             var result = JSON.parse(response.body);
+            if (result && result.status === 'ERROR') {
+                return sendResponse(res, result.statusInfo);
+            }
+
             var interests = getInterests(result.entities, settings);
 
             collectCommonData(result.entities, settings, function (err) {
