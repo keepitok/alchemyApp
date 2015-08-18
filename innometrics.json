@@ -6,6 +6,18 @@
         "type": "bundled",
         "content": "frontend/settings.html"
     }],
+    "widgets": {
+        "interests": {
+            "title": "Interests",
+            "options": {
+                "type": "page",
+                "value": "settings/settings.html",
+                "defaultSettings": {
+                    "chartType": "bar"
+                }
+            }
+        }
+    },
     "permissions": ["stream", "profile.update", "profile.read", "app.read.own", "app.update.own"],
     "runtime": {
         "language": "node",

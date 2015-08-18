@@ -1,0 +1,10 @@
+{
+  "chartType": {
+    "title": "Chart type",
+    "type": "string",
+    "enum": [
+      "bar",
+      "pie"
+    ]
+  }
+}
