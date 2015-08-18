@@ -60,7 +60,7 @@ $(function () {
             }
 
             /*
-            // TODO replace test data with real
+            simple example:
             interests = {
                 "Dogs": 10,
                 "Cats": 100
