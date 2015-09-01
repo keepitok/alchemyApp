@@ -8,7 +8,7 @@ $(function () {
     var $chart = $('#chart');
 
     $.jqplot.preInitHooks.push(function (target, data, options) {
-        this._defaultGridPadding = {top:0, right:0, bottom:5, left:0};
+        this._defaultGridPadding = {top:5, right:0, bottom:5, left:0};
     });
 
     /**
@@ -55,12 +55,18 @@ $(function () {
     function getInterestsData (callback) {
         inno.getProperties(function (status, data) {
             var error = null,
-                interests = null;
+                interests = null, interest, interestsToShow;
             if (!status) {
                 error = new Error('Can not get interests data');
             } else {
                 data = data || {};
+                interestsToShow = data.entityType || [];
                 interests = data.commonData || {};
+                for (interest in interests) {
+                    if (interestsToShow.indexOf(interest) === -1) {
+                        delete interests[interest];
+                    }
+                }
             }
 
             /*
@@ -94,7 +100,7 @@ $(function () {
             },
             config = $.extend(
                 defaultConfig,
-                getJQPlotConfigByType(settings.chartType) // (pie or bar)
+                getJQPlotConfigByType(settings.chartType, Object.keys(data).length) // (pie or bar)
             );
 
         $.jqplot(
@@ -143,7 +149,7 @@ $(function () {
         });
     }
 
-    function getJQPlotConfigByType (type) {
+    function getJQPlotConfigByType (type, dataSize) {
         var config;
         type = type || 'bar';
 
@@ -167,7 +173,7 @@ $(function () {
                         location: 'e',
                         escapeHtml: true,
                         rendererOptions: {
-                            numberColumns: 2
+                            numberColumns: dataSize ? Math.ceil(dataSize / 7) : 1
                         }
                     },
                     highlighter: {
