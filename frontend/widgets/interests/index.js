@@ -60,13 +60,7 @@ $(function () {
                 error = new Error('Can not get interests data');
             } else {
                 data = data || {};
-                interestsToShow = data.entityType || [];
                 interests = data.commonData || {};
-                for (interest in interests) {
-                    if (interestsToShow.indexOf(interest) === -1) {
-                        delete interests[interest];
-                    }
-                }
             }
 
             /*
@@ -120,10 +114,19 @@ $(function () {
                 console.error(error);
                 return callback(error);
             } else {
+                var interestsToShow = settings.showInterests || [];
                 getInterestsData(function (error, interests) {
+                    var interest;
                     if (error) {
                         console.error(error);
                     } else {
+                        if (interestsToShow && interestsToShow.length) {
+                            for (interest in interests) {
+                                if (interestsToShow.indexOf(interest) === -1) {
+                                    delete interests[interest];
+                                }
+                            }
+                        }
                         renderChart(interests, settings);
                     }
                     callback(error);
