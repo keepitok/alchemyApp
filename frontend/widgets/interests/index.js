@@ -7,6 +7,10 @@ $(function () {
     var backendUrl;
     var $chart = $('#chart');
 
+    $.jqplot.preInitHooks.push(function (target, data, options) {
+        this._defaultGridPadding = {top:0, right:0, bottom:5, left:0};
+    });
+
     /**
      * Main entry point
      */
@@ -169,7 +173,7 @@ $(function () {
                     highlighter: {
                         show: true,
                         formatString:'%s',
-                        tooltipLocation:'sw',
+                        tooltipLocation:'n',
                         useAxesFormatters:false
                     }
                 };
