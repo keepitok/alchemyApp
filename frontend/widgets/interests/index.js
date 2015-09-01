@@ -7,6 +7,10 @@ $(function () {
     var backendUrl;
     var $chart = $('#chart');
 
+    $.jqplot.preInitHooks.push(function (target, data, options) {
+        this._defaultGridPadding = {top:0, right:0, bottom:5, left:0};
+    });
+
     /**
      * Main entry point
      */
@@ -72,10 +76,9 @@ $(function () {
 
     /**
      * Render chart by certain data
-     * @param {String} title
      * @param {Object} data
      */
-    function renderChart(title, data, settings) {
+    function renderChart(data, settings) {
         settings = settings || {};
         var plotData = prepareJQPlotData(data);
         if (!plotData.length) {
@@ -84,7 +87,6 @@ $(function () {
         }
 
         var defaultConfig = {
-                title: title,
                 grid: {
                     borderWidth: 0,
                     shadow: false
@@ -116,7 +118,7 @@ $(function () {
                     if (error) {
                         console.error(error);
                     } else {
-                        renderChart('Interests', interests, settings);
+                        renderChart(interests, settings);
                     }
                     callback(error);
                 });
@@ -155,10 +157,25 @@ $(function () {
                         rendererOptions: {
                             // Put data labels on the pie slices.
                             // By default, labels show the percentage of the slice.
-                            showDataLabels: true
+                            showDataLabels: true,
+                            padding: 0,
+                            shadowOffset: 0
                         }
                     },
-                    legend: { show:true, location: 'e' }
+                    legend: {
+                        show:true,
+                        location: 'e',
+                        escapeHtml: true,
+                        rendererOptions: {
+                            numberColumns: 2
+                        }
+                    },
+                    highlighter: {
+                        show: true,
+                        formatString:'%s',
+                        tooltipLocation:'n',
+                        useAxesFormatters:false
+                    }
                 };
                 break;
 
@@ -167,7 +184,7 @@ $(function () {
                     axesDefaults: {
                         tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
                         tickOptions: {
-                            angle: -30,
+                            angle: -15,
                             fontSize: '10pt'
                         }
                     },
@@ -177,7 +194,10 @@ $(function () {
                         }
                     },
                     series: [{
-                        renderer: $.jqplot.BarRenderer
+                        renderer: $.jqplot.BarRenderer,
+                        rendererOptions: {
+                            shadowOffset: 0
+                        }
                     }],
                     highlighter: {
                         show: true,
