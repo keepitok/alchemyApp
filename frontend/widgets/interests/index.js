@@ -8,7 +8,7 @@ $(function () {
     var $chart = $('#chart');
 
     $.jqplot.preInitHooks.push(function (target, data, options) {
-        this._defaultGridPadding = {top:0, right:0, bottom:5, left:0};
+        this._defaultGridPadding = {top:5, right:0, bottom:5, left:0};
     });
 
     /**
@@ -55,7 +55,7 @@ $(function () {
     function getInterestsData (callback) {
         inno.getProperties(function (status, data) {
             var error = null,
-                interests = null;
+                interests = null, interest, interestsToShow;
             if (!status) {
                 error = new Error('Can not get interests data');
             } else {
@@ -64,7 +64,7 @@ $(function () {
             }
 
             /*
-            simple example:
+            /simple example:
             interests = {
                 "Dogs": 10,
                 "Cats": 100
@@ -77,6 +77,7 @@ $(function () {
     /**
      * Render chart by certain data
      * @param {Object} data
+     * @param {Object} settings
      */
     function renderChart(data, settings) {
         settings = settings || {};
@@ -94,7 +95,7 @@ $(function () {
             },
             config = $.extend(
                 defaultConfig,
-                getJQPlotConfigByType(settings.chartType) // (pie or bar)
+                getJQPlotConfigByType(settings.chartType, Object.keys(data).length) // (pie or bar)
             );
 
         $.jqplot(
@@ -114,10 +115,19 @@ $(function () {
                 console.error(error);
                 return callback(error);
             } else {
+                var interestsToShow = settings.showInterests || [];
                 getInterestsData(function (error, interests) {
+                    var interest;
                     if (error) {
                         console.error(error);
                     } else {
+                        if (interestsToShow && interestsToShow.length) {
+                            for (interest in interests) {
+                                if (interestsToShow.indexOf(interest) === -1) {
+                                    delete interests[interest];
+                                }
+                            }
+                        }
                         renderChart(interests, settings);
                     }
                     callback(error);
@@ -143,7 +153,7 @@ $(function () {
         });
     }
 
-    function getJQPlotConfigByType (type) {
+    function getJQPlotConfigByType (type, dataSize) {
         var config;
         type = type || 'bar';
 
@@ -167,7 +177,7 @@ $(function () {
                         location: 'e',
                         escapeHtml: true,
                         rendererOptions: {
-                            numberColumns: 2
+                            numberColumns: dataSize ? Math.ceil(dataSize / 7) : 1
                         }
                     },
                     highlighter: {

@@ -6,5 +6,59 @@
       "bar",
       "pie"
     ]
+  },
+  "showInterests": {
+    "title": "Show only next interests",
+    "type": "array",
+    "uniqueItems": true,
+    "items": {
+      "type": "string",
+      "enum": [
+        "Anatomy",
+        "Automobile",
+        "Anniversary",
+        "City",
+        "Company",
+        "Continent",
+        "Country",
+        "Degree",
+        "Drug",
+        "EmailAddress",
+        "EntertainmentAward",
+        "Facility",
+        "FieldTerminology",
+        "FinancialMarketIndex",
+        "GeographicFeature",
+        "Hashtag",
+        "HealthCondition",
+        "Holiday",
+        "IPAddress",
+        "JobTitle",
+        "Movie",
+        "MusicGroup",
+        "NaturalDisaster",
+        "OperatingSystem",
+        "Organization",
+        "Person",
+        "PrintMedia",
+        "Quantity",
+        "RadioProgram",
+        "RadioStation",
+        "Region",
+        "Sport",
+        "StateOrCounty",
+        "Technology",
+        "TelevisionShow",
+        "TelevisionStation",
+        "TwitterHandle"
+      ]
+    },
+    "default": [
+      "Country",
+      "City",
+      "Person",
+      "Company",
+      "Technology"
+    ]
   }
 }
