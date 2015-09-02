@@ -64,7 +64,7 @@ $(function () {
             }
 
             /*
-            simple example:
+            /simple example:
             interests = {
                 "Dogs": 10,
                 "Cats": 100
@@ -77,6 +77,7 @@ $(function () {
     /**
      * Render chart by certain data
      * @param {Object} data
+     * @param {Object} settings
      */
     function renderChart(data, settings) {
         settings = settings || {};
