@@ -1,14 +1,14 @@
 {
-    "version_name": "Alchemy application",
+    "version_name": "Alchemy X application",
     "version_description": "",
     "pages": [{
-        "name": "App Settings",
+        "name": "App Settings X",
         "type": "bundled",
         "content": "frontend/settings.html"
     }],
     "widgets": {
         "interests": {
-            "title": "Interests",
+            "title": "InterestsX1",
             "options": {
                 "type": "page",
                 "value": "settings/settings.html",
@@ -16,7 +16,17 @@
                     "chartType": "bar"
                 }
             }
-        }
+        },
+        "interests2": {
+            "title": "InterestsX2",
+            "options": {
+                "type": "page",
+                "value": "settings/settingsX2.html",
+                "defaultSettings": {
+                    "chartType": "bar"
+                }
+            }
+        },        
     },
     "permissions": ["stream", "profile.update", "profile.read", "app.read.own", "app.update.own"],
     "runtime": {
