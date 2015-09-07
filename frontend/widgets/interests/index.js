@@ -7,6 +7,15 @@ $(function () {
     var backendUrl;
     var $chart = $('#chart');
 
+    // related to "frontend/widgets/interests/settings/settings.schema.json"
+    var defaultInterestToShow = [
+        "Country",
+        "City",
+        "Person",
+        "Company",
+        "Technology"
+    ];
+
     $.jqplot.preInitHooks.push(function (target, data, options) {
         this._defaultGridPadding = {top:5, right:0, bottom:5, left:0};
     });
@@ -115,7 +124,7 @@ $(function () {
                 console.error(error);
                 return callback(error);
             } else {
-                var interestsToShow = settings.showInterests || [];
+                var interestsToShow = settings.showInterests ? settings.showInterests : defaultInterestToShow;
                 getInterestsData(function (error, interests) {
                     var interest;
                     if (error) {
