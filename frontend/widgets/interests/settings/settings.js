@@ -50,6 +50,7 @@
                 } else {
                     alert('Error: unable to get Widget Settings');
                 }
+                inno.sendIsReady();
                 loader.hide();
             });
         });
