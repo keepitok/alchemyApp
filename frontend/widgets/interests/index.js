@@ -124,6 +124,7 @@ $(function () {
                 console.error(error);
                 return callback(error);
             } else {
+                settings = settings || {};
                 var interestsToShow = settings.showInterests ? settings.showInterests : defaultInterestToShow;
                 getInterestsData(function (error, interests) {
                     var interest;
