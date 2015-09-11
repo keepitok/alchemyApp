@@ -21,7 +21,7 @@
             "title": "InterestsX2",
             "options": {
                 "type": "page",
-                "value": "settings/settingsX2.html",
+                "value": "settings/settings.html",
                 "defaultSettings": {
                     "chartType": "bar"
                 }
